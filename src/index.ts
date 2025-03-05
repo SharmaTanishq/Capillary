@@ -2,7 +2,7 @@ import express, { Request, Response, Router } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import ip from 'ip';
-import { CouponService, RewardRedeemService, RewardUnredeemService } from './Capillary/Rewards';
+import { CouponService } from './Capillary/Rewards';
 
 // Load environment variables
 dotenv.config();
@@ -41,8 +41,8 @@ router.get('/memberRewards/:rewardId/redeem', async (req: Request, res: Response
             return res.status(400).json({ error: 'Reward ID is required' });
         }
         
-        const redeemService = await RewardRedeemService.create();
-        const result = await redeemService.redeemCoupon(rewardId);
+        const couponService = await CouponService.create();
+        const result = await couponService.redeemCoupon(rewardId);
         
         res.json(result);
     } catch (error) {
@@ -59,8 +59,8 @@ router.get('/memberRewards/:rewardId/unredeem', async (req: Request, res: Respon
             return res.status(400).json({ error: 'Reward ID is required' });
         }
         
-        const unredeemService = await RewardUnredeemService.create();
-        const result = await unredeemService.unredeemCoupon(rewardId);
+        const couponService = await CouponService.create();
+        const result = await couponService.unredeemCoupon(rewardId);
         
         res.json(result);
     } catch (error) {

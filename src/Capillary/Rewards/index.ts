@@ -1,9 +1,4 @@
 import { TokenService } from '../TokenService';
-import { RewardRedeemService } from './Redeem';
-import { RewardUnredeemService } from './UnRedeem';
-
-export { RewardRedeemService } from './Redeem';
-export { RewardUnredeemService } from './UnRedeem';
 
 export class CouponService {
     constructor(private token: string) {
@@ -51,6 +46,66 @@ export class CouponService {
             return responseForKibo;
         } catch (e) {
             throw new Error(`Failed to fetch coupons: ${e}`);
+        }
+    }
+
+    /**
+     * Redeems a reward by its ID
+     * @param rewardId The ID of the reward to redeem
+     * @returns The response data or error
+     */
+    async redeemCoupon(rewardId: string) {
+        try {
+            const response = await fetch(`${process.env.CAPILLARY_URL}/api/v1/loyalty/memberRewards/${rewardId}/redeem`, {
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.token}`,
+                    'Accept-Language': 'en',
+                },
+                body: JSON.stringify({})
+            });
+            
+            if (!response.ok) {
+                const errorReason = await response.json();
+                return { error: errorReason };
+            }
+            
+            const data = await response.json();
+            return data;
+        } catch (e) {
+            throw new Error(`Failed to redeem coupon: ${e}`);
+        }
+    }
+
+    /**
+     * Unredeems a reward by its ID
+     * @param rewardId The ID of the reward to unredeem
+     * @returns The response data or error
+     */
+    async unredeemCoupon(rewardId: string) {
+        try {
+            const response = await fetch(`${process.env.CAPILLARY_URL}/api/v1/loyalty/memberRewards/${rewardId}/unredeem`, {
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.token}`,
+                    'Accept-Language': 'en',
+                },
+                body: JSON.stringify({})
+            });
+            
+            if (!response.ok) {
+                const errorReason = await response.json();
+                return { error: errorReason };
+            }
+            
+            const data = await response.json();
+            return data;
+        } catch (e) {
+            throw new Error(`Failed to unredeem coupon: ${e}`);
         }
     }
 

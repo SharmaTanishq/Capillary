@@ -20,20 +20,25 @@ async function testEmail() {
     try {
       const auth = new CapillaryAuth();
       const token = await auth.authorize();
-      console.log('Token obtained successfully:', token.substring(0, 10) + '...');
+      console.log('Token obtained successfully:', token.substring(0, 15) + '...');
       
       console.log('\nTesting email: shokri@wooomail.com');
+      console.log('Making API request...');
+      
+      // Log the full URL being called (without the token)
+      console.log(`API URL: ${process.env.CAPILLARY_URL}/v2/customers/coupons?email=shokri@wooomail.com&status=Active_Unredeemed`);
+      
       const result = await getActiveCoupons('shokri@wooomail.com', token);
       
-      console.log('API Response:');
+      console.log('\nAPI Response:');
       console.log(JSON.stringify(result, null, 2));
       
       if (Array.isArray(result) && result.length === 0) {
-        console.log('No coupons found for shokri@wooomail.com');
+        console.log('\nResult: No coupons found for shokri@wooomail.com');
       } else if (Array.isArray(result)) {
-        console.log(`Found ${result.length} coupons for shokri@wooomail.com`);
+        console.log(`\nResult: Found ${result.length} coupons for shokri@wooomail.com`);
       } else {
-        console.log('Unexpected response format:', result);
+        console.log('\nResult: Unexpected response format:', result);
       }
     } catch (authError) {
       console.error('Authentication error:', authError);

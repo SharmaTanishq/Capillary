@@ -11,9 +11,7 @@ export async function getActiveCoupons(memberEmail: string, token: string) {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'X-CAP-API-OAUTH-TOKEN': `Bearer ${token}`,
-                'X-CAP-API-ATTRIBUTION-ENTITY-TYPE': "TILL",
-                'X-CAP-API-ATTRIBUTION-ENTITY-CODE': "flt.100.015",
+                'X-CAP-API-OAUTH-TOKEN': `${token}`,
                 'Accept-Language': 'en',
             },
         });

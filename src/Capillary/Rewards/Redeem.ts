@@ -11,7 +11,7 @@ export async function redeemCoupon(rewardId: string, token: string) {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                'X-CAP-API-OAUTH-TOKEN': `${token}`,
                 'Accept-Language': 'en',
             },
             body: JSON.stringify({})

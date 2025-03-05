@@ -35,7 +35,7 @@ describe('GetCoupons', () => {
       expect.objectContaining({
         method: 'GET',
         headers: expect.objectContaining({
-          'X-CAP-API-OAUTH-TOKEN': 'Bearer test-token'
+          'X-CAP-API-OAUTH-TOKEN': 'test-token'
         })
       })
     );

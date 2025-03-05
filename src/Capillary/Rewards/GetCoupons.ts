@@ -6,12 +6,14 @@
  */
 export async function getActiveCoupons(memberEmail: string, token: string) {
     try {
-        const response = await fetch(`${process.env.CAPILLARY_URL}/api/v1/loyalty/memberRewards/summary?member.email=${memberEmail}&options.UnRedeemedOnly=true&options.UnexpiredOnly=true`, {
+        const response = await fetch(`${process.env.CAPILLARY_URL}/v2/customers/coupons?email=${memberEmail}&status=Active_Unredeemed`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                'X-CAP-API-OAUTH-TOKEN': `Bearer ${token}`,
+                'X-CAP-API-ATTRIBUTION-ENTITY-TYPE': "TILL",
+                'X-CAP-API-ATTRIBUTION-ENTITY-CODE': "flt.100.015",
                 'Accept-Language': 'en',
             },
         });
@@ -22,11 +24,16 @@ export async function getActiveCoupons(memberEmail: string, token: string) {
         }
 
         const data = await response.json();
-        console.log("GetCoupons", data);
+        
+        // If no data or empty array, return empty array
+        if (!data.data || data.data.length === 0) {
+            return [];
+        }
+        
+        //COMMENTED FILTERATION FOR $5 REWARD, CAPILLARY YET TO COMEBACK ON THIS
+        //const filteredRewards = data.data.filter((reward: any) => reward.displayName === "$5 Reward");
 
-        const FilteredRewards = data.data.filter((reward: any) => reward.displayName === "$5 Reward");
-
-        const responseForKibo = FilteredRewards.map((reward: any) => ({
+        const formattedRewards = data.data.map((reward: any) => ({
             "code": `${reward.memberRewardId}`,
             "currencyCode": "USD",
             "customCreditType": 'LoyaltyRewards',
@@ -37,7 +44,7 @@ export async function getActiveCoupons(memberEmail: string, token: string) {
             "activationDate": `${reward.dateIssued}`,
         }));
 
-        return responseForKibo;
+        return formattedRewards;
     } catch (e) {
         throw new Error(`Failed to fetch coupons: ${e}`);
     }

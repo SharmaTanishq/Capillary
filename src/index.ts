@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes
-router.get('/getActiveCoupons', async (req: Request, res: Response) => {
+router.get('/getActiveCoupons', async (req: any, res: any) => {
     try {
         const email = req.query.email as string;
         
@@ -33,7 +33,7 @@ router.get('/getActiveCoupons', async (req: Request, res: Response) => {
     }
 });
 
-router.get('/memberRewards/:rewardId/redeem', async (req: Request, res: Response) => {
+router.get('/memberRewards/:rewardId/redeem', async (req: any, res: any) => {
     try {
         const { rewardId } = req.params;
         
@@ -51,7 +51,7 @@ router.get('/memberRewards/:rewardId/redeem', async (req: Request, res: Response
     }
 });
 
-router.get('/memberRewards/:rewardId/unredeem', async (req: Request, res: Response) => {
+router.get('/memberRewards/:rewardId/unredeem', async (req: any, res: any) => {
     try {
         const { rewardId } = req.params;
         

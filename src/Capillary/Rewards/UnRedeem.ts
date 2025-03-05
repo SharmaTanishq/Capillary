@@ -1,10 +1,12 @@
+import { UnredeemCouponResponse } from '../../types';
+
 /**
  * Unredeems a reward by its ID
  * @param rewardId The ID of the reward to unredeem
  * @param token The authentication token
  * @returns The response data or error
  */
-export async function unredeemCoupon(rewardId: string, token: string) {
+export async function unredeemCoupon(rewardId: string, token: string): Promise<UnredeemCouponResponse> {
     try {
         const response = await fetch(`${process.env.CAPILLARY_URL}/api/v1/loyalty/memberRewards/${rewardId}/unredeem`, {
             method: 'PATCH',
@@ -23,7 +25,7 @@ export async function unredeemCoupon(rewardId: string, token: string) {
         }
         
         const data = await response.json();
-        return data;
+        return { data };
     } catch (e) {
         throw new Error(`Failed to unredeem coupon: ${e}`);
     }

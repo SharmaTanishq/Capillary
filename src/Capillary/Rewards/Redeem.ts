@@ -1,10 +1,12 @@
+import { RedeemCouponResponse } from '../../types';
+
 /**
  * Redeems a reward by its ID
  * @param rewardId The ID of the reward to redeem
  * @param token The authentication token
  * @returns The response data or error
  */
-export async function redeemCoupon(rewardId: string, token: string) {
+export async function redeemCoupon(rewardId: string, token: string): Promise<RedeemCouponResponse> {
     try {
         const response = await fetch(`${process.env.CAPILLARY_URL}/api/v1/loyalty/memberRewards/${rewardId}/redeem`, {
             method: 'PATCH',
@@ -23,7 +25,7 @@ export async function redeemCoupon(rewardId: string, token: string) {
         }
         
         const data = await response.json();
-        return data;
+        return { data };
     } catch (e) {
         throw new Error(`Failed to redeem coupon: ${e}`);
     }

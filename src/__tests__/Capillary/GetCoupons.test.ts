@@ -1,4 +1,5 @@
 import { getActiveCoupons } from '../../Capillary/Rewards/GetCoupons';
+import { CapillaryCouponResponse, KiboCoupon } from '../../types';
 
 // Mock global fetch
 global.fetch = jest.fn();
@@ -10,14 +11,50 @@ describe('GetCoupons', () => {
 
   it('should return coupons for a valid email', async () => {
     // Mock response data
-    const mockResponseData = {
-      data: [
-        {
-          memberRewardId: '12345',
-          dateIssued: '2023-01-01T00:00:00Z',
-          displayName: 'Test Reward'
-        }
-      ]
+    const mockResponseData: CapillaryCouponResponse = {
+      entity: {
+        pagination: {
+          limit: "100",
+          offset: "0",
+          total: 1
+        },
+        customers: [
+          {
+            firstname: "Test",
+            lastname: "User",
+            email: "shokri@wooomail.com",
+            mobile: "1234567890",
+            id: 123456,
+            externalId: "12345",
+            coupons: [
+              {
+                code: "12345",
+                seriesId: 1,
+                description: "Test Reward",
+                validTill: "2025-01-01T00:00:00Z",
+                discountType: "ABS",
+                discountValue: 5,
+                discountUpto: 0,
+                redemptionCount: 0,
+                redemptionsLeft: 1,
+                id: 12345,
+                createdDate: "2023-01-01T00:00:00Z",
+                transactionNumber: "0",
+                issuedAt: {
+                  code: "test.code",
+                  name: "Test Name"
+                },
+                customProperty: [],
+                redemptions: [],
+                reversedRedemptions: []
+              }
+            ]
+          }
+        ]
+      },
+      warnings: [],
+      errors: [],
+      success: true
     };
 
     // Mock successful fetch response
@@ -43,22 +80,42 @@ describe('GetCoupons', () => {
     // Verify the result is formatted correctly
     expect(result).toEqual([
       {
-        code: '12345',
-        currencyCode: 'USD',
+        code: "12345",
+        currencyCode: "USD",
         customCreditType: 'LoyaltyRewards',
         creditType: 'Custom',
         initialBalance: 5,
         currentBalance: 5,
         isEnabled: true,
-        activationDate: '2023-01-01T00:00:00Z'
+        activationDate: "2023-01-01T00:00:00Z"
       }
     ]);
   });
 
   it('should return empty array when no coupons are available', async () => {
     // Mock empty response data
-    const mockResponseData = {
-      data: []
+    const mockResponseData: CapillaryCouponResponse = {
+      entity: {
+        pagination: {
+          limit: "100",
+          offset: "0",
+          total: 1
+        },
+        customers: [
+          {
+            firstname: "Test",
+            lastname: "User",
+            email: "shokri@wooomail.com",
+            mobile: "1234567890",
+            id: 123456,
+            externalId: "12345",
+            coupons: []
+          }
+        ]
+      },
+      warnings: [],
+      errors: [],
+      success: true
     };
 
     // Mock successful fetch response with empty data
@@ -77,6 +134,35 @@ describe('GetCoupons', () => {
         method: 'GET'
       })
     );
+
+    // Verify the result is an empty array
+    expect(result).toEqual([]);
+  });
+
+  it('should return empty array when no customers are found', async () => {
+    // Mock empty customers response
+    const mockResponseData: CapillaryCouponResponse = {
+      entity: {
+        pagination: {
+          limit: "100",
+          offset: "0",
+          total: 0
+        },
+        customers: []
+      },
+      warnings: [],
+      errors: [],
+      success: true
+    };
+
+    // Mock successful fetch response with no customers
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValueOnce(mockResponseData)
+    });
+
+    // Call the function with test email
+    const result = await getActiveCoupons('shokri@wooomail.com', 'test-token');
 
     // Verify the result is an empty array
     expect(result).toEqual([]);
@@ -114,13 +200,19 @@ describe('GetCoupons', () => {
 
   // Specific test for shokri@wooomail.com
   it('should specifically test email shokri@wooomail.com', async () => {
-    // This test can be run in two ways:
-    // 1. With mock data (as shown below)
-    // 2. With actual API call (commented out below)
-
-    // OPTION 1: Using mock data
-    const mockResponseData = {
-      data: [] // Assuming no coupons for this user, adjust if needed
+    // Mock empty response for this specific email
+    const mockResponseData: CapillaryCouponResponse = {
+      entity: {
+        pagination: {
+          limit: "100",
+          offset: "0",
+          total: 0
+        },
+        customers: []
+      },
+      warnings: [],
+      errors: [],
+      success: true
     };
 
     // Mock successful fetch response
@@ -139,27 +231,11 @@ describe('GetCoupons', () => {
     );
 
     // Check if result is as expected (empty array in this case)
-    expect(Array.isArray(result)).toBe(true);
-
-    /* 
-    // OPTION 2: Using actual API call (uncomment to use)
-    // Note: This requires actual credentials and will make a real API call
-    // Not recommended for automated tests but useful for manual verification
-    
-    // Get a real token
-    // const tokenService = TokenService.getInstance();
-    // const token = await tokenService.getToken();
-    
-    // Make the actual API call
-    // const result = await getActiveCoupons('shokri@wooomail.com', token);
-    
-    // Log the result for inspection
-    // console.log('API result for shokri@wooomail.com:', result);
-    
-    // Verify the result structure
-    // expect(Array.isArray(result)).toBe(true);
-    // If we expect no coupons:
-    // expect(result.length).toBe(0);
-    */
+    // First check if it's an array (not an error response)
+    if (Array.isArray(result)) {
+      expect(result.length).toBe(0);
+    } else {
+      fail('Expected an array but got an error response');
+    }
   });
 }); 

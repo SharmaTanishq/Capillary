@@ -16,3 +16,9 @@ dist/
 *.swp
 *.swo
 .DS_Store
+
+# Cursor specific
+.cursor/
+rules/
+
+

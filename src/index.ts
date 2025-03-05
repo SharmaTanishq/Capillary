@@ -69,6 +69,16 @@ router.get('/memberRewards/:rewardId/unredeem', async (req: any, res: any) => {
     }
 });
 
+// Health check endpoint
+router.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    service: 'Capillary Integration API',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Use the router
 app.use('/api', router);
 

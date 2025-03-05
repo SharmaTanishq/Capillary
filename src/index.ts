@@ -1,4 +1,4 @@
-import express, { Request, Response, Router } from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import ip from 'ip';
@@ -8,7 +8,7 @@ import { CouponService } from './Capillary/Rewards';
 dotenv.config();
 
 const app = express();
-const router: Router = express.Router();
+const router = express.Router();
 
 // Middleware
 app.use(cors());
@@ -69,12 +69,13 @@ router.get('/memberRewards/:rewardId/unredeem', async (req: Request, res: Respon
     }
 });
 
-// Use router
-app.use('/', router);
+// Use the router
+app.use('/api', router);
 
-// Server setup
-const PORT = process.env.PORT || 4000;
-
+// Start the server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on http://${ip.address()}:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Local: http://localhost:${PORT}`);
+    console.log(`Network: http://${ip.address()}:${PORT}`);
 });

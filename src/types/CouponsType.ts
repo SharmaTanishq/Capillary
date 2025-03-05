@@ -1,9 +1,19 @@
 /**
- * Types related to Capillary coupons and rewards
+ * Types related to Capillary and Kibo Commerce integration
+ * 
+ * This file contains types for both:
+ * 1. Capillary API - The source system where coupons are fetched from
+ * 2. Kibo Commerce - The target system where coupons are sent to
  */
 
 /**
- * Represents a custom property in a coupon
+ * ==========================================
+ * CAPILLARY API TYPES (SOURCE SYSTEM)
+ * ==========================================
+ */
+
+/**
+ * Represents a custom property in a Capillary coupon
  */
 export interface CustomProperty {
   name: string;
@@ -11,7 +21,7 @@ export interface CustomProperty {
 }
 
 /**
- * Represents a location where a coupon was issued
+ * Represents a location where a Capillary coupon was issued
  */
 export interface IssuedAt {
   code: string;
@@ -19,14 +29,14 @@ export interface IssuedAt {
 }
 
 /**
- * Represents a redemption or reversed redemption record
+ * Represents a redemption or reversed redemption record in Capillary
  */
 export interface RedemptionRecord {
   // Add properties as needed when available in the data
 }
 
 /**
- * Represents a coupon from Capillary
+ * Represents a coupon from Capillary API
  */
 export interface CapillaryCoupon {
   code: string;
@@ -61,7 +71,7 @@ export interface CapillaryCustomer {
 }
 
 /**
- * Represents pagination information
+ * Represents pagination information in Capillary API
  */
 export interface Pagination {
   limit: string;
@@ -98,7 +108,13 @@ export interface CapillaryReward {
 }
 
 /**
- * Represents a formatted coupon for Kibo
+ * ==========================================
+ * KIBO COMMERCE TYPES (TARGET SYSTEM)
+ * ==========================================
+ */
+
+/**
+ * Represents a formatted coupon for Kibo Commerce
  */
 export interface KiboCoupon {
   code: string;
@@ -110,6 +126,12 @@ export interface KiboCoupon {
   isEnabled: boolean;
   activationDate: string;
 }
+
+/**
+ * ==========================================
+ * COMMON TYPES AND RESPONSES
+ * ==========================================
+ */
 
 /**
  * Represents an error response from the Capillary API
@@ -127,6 +149,7 @@ export interface CapillarySuccessResponse<T> {
 
 /**
  * Represents the response from the getActiveCoupons function
+ * Returns either Kibo-formatted coupons or an error
  */
 export type GetActiveCouponsResponse = KiboCoupon[] | CapillaryErrorResponse;
 

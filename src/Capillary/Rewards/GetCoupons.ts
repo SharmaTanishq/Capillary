@@ -1,13 +1,14 @@
 import { CapillaryCouponResponse, GetActiveCouponsResponse, KiboCoupon } from '../../types';
 
 /**
- * Gets active coupons for a member
+ * Gets active coupons for a member from Capillary and formats them for Kibo
  * @param memberEmail The email of the member
- * @param token The authentication token
- * @returns Array of coupons formatted for Kibo
+ * @param token The authentication token for Capillary API
+ * @returns Array of coupons formatted for Kibo Commerce
  */
 export async function getActiveCoupons(memberEmail: string, token: string): Promise<GetActiveCouponsResponse> {
     try {
+        // Call to Capillary API
         const response = await fetch(`${process.env.CAPILLARY_URL}/v2/customers/coupons?email=${memberEmail}&status=Active_Unredeemed`, {
             method: 'GET',
             headers: {
@@ -23,6 +24,7 @@ export async function getActiveCoupons(memberEmail: string, token: string): Prom
             return { error: errorReason };
         }
 
+        // Parse Capillary API response
         const data = await response.json() as CapillaryCouponResponse;
         
         // If no data, customers, or coupons, return empty array
@@ -36,7 +38,7 @@ export async function getActiveCoupons(memberEmail: string, token: string): Prom
             return [];
         }
         
-        // Map the coupons to the Kibo format
+        // Transform Capillary coupons to Kibo format
         const formattedCoupons: KiboCoupon[] = customer.coupons.map(coupon => ({
             "code": coupon.code,
             "currencyCode": "USD",
@@ -48,6 +50,7 @@ export async function getActiveCoupons(memberEmail: string, token: string): Prom
             "activationDate": coupon.createdDate,
         }));
 
+        // Return coupons in Kibo format
         return formattedCoupons;
     } catch (e) {
         throw new Error(`Failed to fetch coupons: ${e}`);

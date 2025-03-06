@@ -1,12 +1,19 @@
 import { getOrderDetailsById } from "../../KIBO/OrderDetails";
 import { TokenService } from "../TokenService";
+import { 
+    CapillaryTransaction, 
+    CapillaryLineItem, 
+    CapillaryPaymentMode,
+    CapillaryTransactionResponse,
+    CapillaryTransactionParams
+} from "./types";
 
 /**
  * Sends order details to Capillary API as a transaction
  * @param orderId The Kibo order ID to send to Capillary
  * @returns Response from Capillary API or error
  */
-export async function sendOrderDetails(orderId: string) {
+export async function sendOrderDetails(orderId: string): Promise<CapillaryTransactionResponse> {
     try {
         // Get order details from Kibo
         const orderDetails = await getOrderDetailsById(orderId);
@@ -15,7 +22,7 @@ export async function sendOrderDetails(orderId: string) {
             return {
                 success: false,
                 message: "Order not found"
-            }
+            };
         }
 
         // Get authentication token
@@ -29,38 +36,66 @@ export async function sendOrderDetails(orderId: string) {
             return {
                 success: false,
                 message: "Customer email not found in order details"
-            }
+            };
         }
         
+        // Prepare line items
+        const lineItems: CapillaryLineItem[] = orderDetails.items?.map((item: any) => ({
+            description: item.name || item.productName || "",
+            discount: null,
+            itemCode: item.id || item.productCode || item.sku,
+            amount: Number(item.price) || Number(item.unitPrice) || 0,
+            qty: item.quantity || "1",
+            rate: (Number(item.price) || Number(item.unitPrice) || 0) / (Number(item.quantity) || 1),
+            serial: 1,
+            value: String(Number(item.price) || Number(item.unitPrice) || 0),
+            extendedFields: {
+                sku: item.sku || item.productCode || ""
+            }
+        })) || [];
+        
+        // Prepare payment modes
+        const paymentModes: CapillaryPaymentMode[] = [
+            {
+                mode: orderDetails.payments?.[0]?.paymentType || "Credit",
+                value: Number(orderDetails.total) || 0,
+                notes: `Payment for order ${orderId}`,
+                attributes: {}
+            }
+        ];
+        
         // Prepare transaction data for Capillary
-        const transactionData = {
-            transactionDetails: {
-                billNumber: orderId,
-                billDate: new Date().toISOString(),
-                transactionType: "PURCHASE",
-                amount: {
-                    value: orderDetails.total,
-                    currency: orderDetails.currencyCode || "USD"
-                },
-                notes: `Order from Kibo Commerce - ${orderId}`
-            },
-            lineItems: orderDetails.items?.map((item: any) => ({
-                id: item.id || item.productCode,
-                description: item.name || item.productName,
-                amount: {
-                    value: item.price || item.unitPrice,
-                    currency: orderDetails.currencyCode || "USD"
-                },
-                quantity: item.quantity,
-                extendedFields: {
-                    sku: item.sku || item.productCode
-                }
-            })) || []
+        const transactionData: CapillaryTransaction = {
+            identifierType: "email",
+            identifierValue: customerEmail,
+            source: "Instore",
+            addWithLocalCurrency: false,
+            type: "REGULAR",
+            billAmount: String(orderDetails.total) || "0",
+            billNumber: orderId,
+            lineItemsV2: lineItems,
+            paymentModes: paymentModes,
+            extendedFields: {
+                orderSource: "Kibo Commerce",
+                orderDate: orderDetails.submittedDate || new Date().toISOString()
+            }
         };
+        
+        // Prepare query parameters
+        const params: CapillaryTransactionParams = {
+            source: "INSTORE",
+            identifierName: "email",
+            identifierValue: customerEmail
+        };
+        
+        // Build query string
+        const queryString = Object.entries(params)
+            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+            .join('&');
         
         // Make POST request to Capillary API
         const response = await fetch(
-            `${process.env.CAPILLARY_URL}/v2/transactions?source=INSTORE&identifierName=email&identifierValue=${encodeURIComponent(customerEmail)}`,
+            `${process.env.CAPILLARY_URL}/v2/transactions?${queryString}`,
             {
                 method: 'POST',
                 headers: {

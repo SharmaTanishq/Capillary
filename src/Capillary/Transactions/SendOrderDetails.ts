@@ -1,3 +1,4 @@
+import { Order } from "@kibocommerce/rest-sdk/clients/Commerce";
 import { getOrderDetailsById } from "../../KIBO/OrderDetails";
 import { TokenService } from "../TokenService";
 import { 
@@ -16,7 +17,7 @@ import {
 export async function sendOrderDetails(orderId: string): Promise<CapillaryTransactionResponse> {
     try {
         // Get order details from Kibo
-        const orderDetails = await getOrderDetailsById(orderId);
+        const orderDetails:Order = await getOrderDetailsById(orderId);
 
         if(!orderDetails){
             return {
@@ -30,7 +31,7 @@ export async function sendOrderDetails(orderId: string): Promise<CapillaryTransa
         const token = await tokenService.getToken();
         
         // Extract customer email from order details
-        const customerEmail = orderDetails.customerEmail || orderDetails.email;
+        const customerEmail = orderDetails.email ;
         
         if (!customerEmail) {
             return {

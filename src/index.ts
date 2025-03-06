@@ -79,8 +79,45 @@ router.get('/health', (req, res) => {
   });
 });
 
+// Send order details to Capillary
+router.post('/sendOrderToCapillary', async (req: any, res: any) => {
+  try {
+    const { orderId } = req.body;
+    
+    if (!orderId) {
+      return res.status(400).json({ error: 'Order ID is required' });
+    }
+    
+    const { sendOrderDetails } = require('./Capillary/Transactions/SendOrderDetails');
+    const result = await sendOrderDetails(orderId);
+    
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Error sending order to Capillary:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // Use the router
 app.use('/api', router);
+
+// Debug route at root path
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'API server is running',
+    availableRoutes: [
+      '/api/health',
+      '/api/memberRewards/:rewardId/redeem',
+      '/api/memberRewards/:rewardId/unredeem',
+      '/api/getActiveCoupons?email=user@example.com',
+      '/api/sendOrderToCapillary (POST)'
+    ]
+  });
+});
 
 // Start the server
 const PORT = process.env.PORT || 3000;
@@ -88,4 +125,22 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Local: http://localhost:${PORT}`);
     console.log(`Network: http://${ip.address()}:${PORT}`);
+    
+    // Debug: Log all registered routes
+    console.log('\nRegistered Routes:');
+    // @ts-ignore - Using internal Express properties for debugging
+    app._router.stack.forEach((middleware: any) => {
+        if(middleware.route) { // routes registered directly on the app
+            console.log(`${Object.keys(middleware.route.methods)} ${middleware.route.path}`);
+        } else if(middleware.name === 'router') { // router middleware
+            // @ts-ignore - Using internal Express properties for debugging
+            middleware.handle.stack.forEach((handler: any) => {
+                if(handler.route) {
+                    const path = handler.route.path;
+                    const methods = Object.keys(handler.route.methods);
+                    console.log(`${methods} /api${path}`);
+                }
+            });
+        }
+    });
 });

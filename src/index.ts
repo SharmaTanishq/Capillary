@@ -121,10 +121,18 @@ app.get('/', (req, res) => {
 
 // Start the server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Local: http://localhost:${PORT}`);
     console.log(`Network: http://${ip.address()}:${PORT}`);
+    
+    // Start scheduler if enabled
+    if (process.env.SCHEDULER_RUNNING === 'true') {
+        const { Scheduler } = require('./Jobs/Scheduler');
+        const scheduler = Scheduler.getInstance();
+        await scheduler.startJobs();
+        console.log('Scheduler started successfully');
+    }
     
     // Debug: Log all registered routes
     console.log('\nRegistered Routes:');

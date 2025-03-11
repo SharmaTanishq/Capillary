@@ -14,6 +14,7 @@ import {
  * @param orderId The Kibo order ID to send to Capillary
  * @returns Response from Capillary API or error
  */
+
 export async function sendOrderDetails(orderId: string): Promise<CapillaryTransactionResponse> {
     try {
         // Get order details from Kibo

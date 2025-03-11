@@ -41,6 +41,12 @@ const doesCustomerExist = async (email: string): Promise<boolean> => {
             return false;
         }
 
+        // Verify the response has the expected structure
+        if (!('entity' in data) || typeof data.entity !== 'number') {
+            console.error('Unexpected response format:', data);
+            return false;
+        }
+
         // Customer exists if we get an entity ID
         return true;
     } catch (error) {

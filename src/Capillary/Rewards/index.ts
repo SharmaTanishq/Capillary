@@ -3,6 +3,16 @@ import { getActiveCoupons } from './GetCoupons';
 import { redeemCoupon } from './Redeem';
 import { unredeemCoupon } from './UnRedeem';
 
+interface RedeemParams {
+    code: string;
+    email: string;
+    billAmount?: string;
+}
+
+interface UnredeemParams {
+    redemptionId: string;
+}
+
 export class CouponService {
     constructor(private token: string) {
         this.token = token;
@@ -13,26 +23,27 @@ export class CouponService {
      * @param memberEmail The email of the member
      * @returns Array of coupons formatted for Kibo
      */
+    
     async getActiveCoupons(memberEmail: string) {
         return getActiveCoupons(memberEmail, this.token);
     }
 
     /**
-     * Redeems a reward by its ID
-     * @param rewardId The ID of the reward to redeem
+     * Redeems a reward by its code
+     * @param params The parameters for redeeming the coupon
      * @returns The response data or error
      */
-    async redeemCoupon(rewardId: string) {
-        return redeemCoupon(rewardId, this.token);
+    async redeemCoupon(params: RedeemParams) {
+        return redeemCoupon(params, this.token);
     }
 
     /**
-     * Unredeems a reward by its ID
-     * @param rewardId The ID of the reward to unredeem
+     * Unredeems a reward by its redemption ID
+     * @param params The parameters for unredeeeming the coupon
      * @returns The response data or error
      */
-    async unredeemCoupon(rewardId: string) {
-        return unredeemCoupon(rewardId, this.token);
+    async unredeemCoupon(params: UnredeemParams) {
+        return unredeemCoupon(params, this.token);
     }
 
     /**

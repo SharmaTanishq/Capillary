@@ -1,14 +1,22 @@
 import { UnredeemCouponResponse } from '../../types';
 
+interface UnredeemCouponParams {
+    redemptionId: string;
+}
+
 /**
- * Unredeems a reward by its ID
- * @param rewardId The ID of the reward to unredeem
+ * Unredeems a reward by its redemption ID
+ * @param params The parameters for unredeeeming the coupon
  * @param token The authentication token
  * @returns The response data or error
  */
-export async function unredeemCoupon(rewardId: string, token: string): Promise<UnredeemCouponResponse> {
+export async function unredeemCoupon(params: UnredeemCouponParams, token: string): Promise<UnredeemCouponResponse> {
     try {
-        const response = await fetch(`${process.env.CAPILLARY_URL}/api/v1/loyalty/memberRewards/${rewardId}/unredeem`, {
+        const requestBody = {
+            redemptionIds: [params.redemptionId]
+        };
+
+        const response = await fetch(`${process.env.CAPILLARY_URL}/v2/coupon/reactivate`, {
             method: 'PATCH',
             headers: {
                 'Accept': 'application/json',
@@ -16,7 +24,7 @@ export async function unredeemCoupon(rewardId: string, token: string): Promise<U
                 'X-CAP-API-OAUTH-TOKEN': `${token}`,
                 'Accept-Language': 'en',
             },
-            body: JSON.stringify({})
+            body: JSON.stringify(requestBody)
         });
         
         if (!response.ok) {

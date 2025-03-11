@@ -1,7 +1,8 @@
 import * as schedule from 'node-schedule';
 import { TokenService } from '../Capillary/TokenService';
 import { sendOrderDetails } from '../Capillary/Transactions/SendOrderDetails';
-import { getOrderDetailsById } from '../KIBO/OrderDetails';
+import { getFulFilledOrders, getOrderDetailsById } from '../KIBO/OrderDetails';
+import { CommerceRuntimeOrderItem } from '@kibocommerce/rest-sdk/clients/Commerce';
 
 export class Scheduler {
     private static instance: Scheduler;
@@ -40,21 +41,26 @@ export class Scheduler {
                     const token = await tokenService.getToken();
                     
                     // TODO: Replace with actual order fetching logic
-                    const orders = await this.getUnprocessedOrders();
+                    const orders = await getFulFilledOrders();
+
+                    if(!orders.synthesized.items) return;
                     
-                    await Promise.all(orders.map(async (orderId) => {
+                    
+                    await Promise.all(orders.synthesized.items.map(async (order) => {
                         try {
-                            console.log(`Processing order ${orderId}...`);
-                            const result = await sendOrderDetails(orderId);
+                            console.log(`Processing order ${order.id}...`);
+                            const matchingSynthesizedOrders = orders.synthesized.items?.filter(synth => synth.id === order.id);
+                            const synthesizedItems:CommerceRuntimeOrderItem[] = matchingSynthesizedOrders?.[0]?.items || [];
+                            const result = await sendOrderDetails(order,synthesizedItems);
                             if (result.success) {
-                                console.log(`Successfully processed order ${orderId}`);
+                                console.log(`Successfully processed order ${order.id}`);
                                 // TODO: Mark order as processed
                             } else {
-                                console.error(`Failed to process order ${orderId}:`, result.message);
+                                console.error(`Failed to process order ${order.id}:`, result.message);
                                 // TODO: Add to failed orders queue
                             }
                         } catch (error) {
-                            console.error(`Error processing order ${orderId}:`, error);
+                            console.error(`Error processing order ${order.id}:`, error);
                         }
                     }));
                 } catch (error) {
@@ -64,34 +70,34 @@ export class Scheduler {
         );
 
         // Schedule failed orders retry job (every 30 minutes)
-        this.jobs.push(
-            schedule.scheduleJob('*/30 * * * *', async () => {
-                try {
-                    console.log('Running failed orders retry job...');
-                    const token = await tokenService.getToken();
+        // this.jobs.push(
+        //     schedule.scheduleJob('*/30 * * * *', async () => {
+        //         try {
+        //             console.log('Running failed orders retry job...');
+        //             const token = await tokenService.getToken();
                     
-                    // TODO: Replace with actual failed orders fetching logic
-                    const failedOrders = await this.getFailedOrders();
+        //             // TODO: Replace with actual failed orders fetching logic
+        //             const failedOrders = await this.getFailedOrders();
                     
-                    await Promise.all(failedOrders.map(async (orderId) => {
-                        try {
-                            console.log(`Retrying failed order ${orderId}...`);
-                            const result = await sendOrderDetails(orderId);
-                            if (result.success) {
-                                console.log(`Successfully processed failed order ${orderId}`);
-                                // TODO: Remove from failed orders queue
-                            } else {
-                                console.error(`Failed to process order ${orderId} again:`, result.message);
-                            }
-                        } catch (error) {
-                            console.error(`Error processing failed order ${orderId}:`, error);
-                        }
-                    }));
-                } catch (error) {
-                    console.error('Error in failed orders retry job:', error);
-                }
-            })
-        );
+        //             await Promise.all(failedOrders.map(async (orderId) => {
+        //                 try {
+        //                     console.log(`Retrying failed order ${orderId}...`);
+        //                     const result = await sendOrderDetails(orderId);
+        //                     if (result.success) {
+        //                         console.log(`Successfully processed failed order ${orderId}`);
+        //                         // TODO: Remove from failed orders queue
+        //                     } else {
+        //                         console.error(`Failed to process order ${orderId} again:`, result.message);
+        //                     }
+        //                 } catch (error) {
+        //                     console.error(`Error processing failed order ${orderId}:`, error);
+        //                 }
+        //             }));
+        //         } catch (error) {
+        //             console.error('Error in failed orders retry job:', error);
+        //         }
+        //     })
+        // );
 
         console.log('All jobs scheduled successfully');
     }
@@ -111,25 +117,11 @@ export class Scheduler {
      * Get list of unprocessed orders
      * TODO: Implement actual logic to fetch unprocessed orders
      */
-    private async getUnprocessedOrders(): Promise<string[]> {
-        // Placeholder implementation
-        return [];
-    }
+  
 
     /**
      * Get list of failed orders
      * TODO: Implement actual logic to fetch failed orders
      */
-    private async getFailedOrders(): Promise<string[]> {
-        // Placeholder implementation
-        return [];
-    }
-}
-
-export class FulfilledOrderJob{
-
-}
-
-export class ReturnJob{
 
 }

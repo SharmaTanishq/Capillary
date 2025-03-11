@@ -1,10 +1,10 @@
 import { kiboConfiguration } from "./Configurations";
-import { Order, OrderApi, Return,  } from "@kibocommerce/rest-sdk/clients/Commerce";
+import { Order, OrderApi, OrderCollection, Return,  } from "@kibocommerce/rest-sdk/clients/Commerce";
 
 const orderClient = new OrderApi(kiboConfiguration);
 
 
-export const getFulFilledOrders = async () => {
+export const getFulFilledOrders = async (): Promise<{unSynthesized:OrderCollection,synthesized:OrderCollection}> => {
 
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();    
     
@@ -13,16 +13,16 @@ export const getFulFilledOrders = async () => {
     const data = await orderClient.getOrders({filter: filter});
     const synthesized = await orderClient.getOrders({filter: filter, mode: "synthesized"});
     
-    return {data,synthesized};
+    return {unSynthesized:data,synthesized:synthesized};
 }
 
 
-export const getOrderDetailsById = async (orderId:string): Promise<Order | any> => {
+export const getOrderDetailsById = async (orderId:string): Promise<{unSynthesized:Order,synthesized:Order} | undefined> => {
     try {
-        const data = await orderClient.getOrder({orderId:orderId});
+        const unSynthesized = await orderClient.getOrder({orderId:orderId});
         const synthesized = await orderClient.getOrder({orderId:orderId,mode:"synthesized"});
 
-        return {data,synthesized};
+        return {unSynthesized,synthesized};
     } catch(e) {
         console.error("Cannot fetch order",e);
         return undefined;

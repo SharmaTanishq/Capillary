@@ -1,5 +1,5 @@
 import { kiboConfiguration } from "./Configurations";
-import {  Return, ReturnApi,  } from "@kibocommerce/rest-sdk/clients/Commerce";
+import {  Return, ReturnApi, ReturnCollection,  } from "@kibocommerce/rest-sdk/clients/Commerce";
 
 const returnClient = new ReturnApi(kiboConfiguration);
 
@@ -13,12 +13,12 @@ export const getReturnDetailsById = async (returnId:string): Promise<Return | un
     }
 }
 
-export const getFullyRefundedReturns = async()=>{
+export const getFullyRefundedReturns = async():Promise<ReturnCollection | undefined>=>{
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
    
-   const filterWithEmail = `refundStatus eq FullyRefunded and createDate ge ${oneHourAgo}`;
+    const filter = `refundStatus eq FullyRefunded`;
    
-   const returns = await returnClient.getReturns({filter:filterWithEmail});
-   return returns;
+    const returns = await returnClient.getReturns({filter:filter});
+    return returns;
 }
 

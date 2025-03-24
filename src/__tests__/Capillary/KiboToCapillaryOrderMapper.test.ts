@@ -1,8 +1,12 @@
+import { Order } from '@kibocommerce/rest-sdk/clients/Commerce';
 import { KiboToCapillaryOrderMapper } from '../../Capillary/Transactions/KiboCapillaryOrderMapper';
 import { getOrderDetailsById } from '../../KIBO/OrderDetails';
+import { sampleOrder } from './sampleOrder';
 
 // Mock the getOrderDetailsById function
 jest.mock('../../KIBO/OrderDetails');
+
+
 
 describe('KiboToCapillaryOrderMapper', () => {
     beforeEach(() => {
@@ -11,30 +15,9 @@ describe('KiboToCapillaryOrderMapper', () => {
 
     it('should map a valid Kibo order to Capillary format', async () => {
         // Mock order details
-        const mockOrder = {
-            id: 'ORDER123',
-            email: 'customer@example.com',
-            total: 100,
-            submittedDate: '2024-03-20T10:30:00Z',
-            items: [
-                {
-                    id: 'ITEM1',
-                    name: 'Test Product',
-                    sku: 'SKU123',
-                    price: 50,
-                    quantity: 2
-                }
-            ],
-            payments: [
-                {
-                    paymentType: 'CreditCard'
-                }
-            ]
-        };
+       
 
-        (getOrderDetailsById as jest.Mock).mockResolvedValueOnce(mockOrder);
-
-        const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat('ORDER123');
+        const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat(sampleOrder, sampleOrder.items!);
 
         expect(result.success).toBe(true);
         expect(result.data).toEqual({
@@ -78,7 +61,7 @@ describe('KiboToCapillaryOrderMapper', () => {
     it('should handle missing order', async () => {
         (getOrderDetailsById as jest.Mock).mockResolvedValueOnce(null);
 
-        const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat('INVALID_ORDER');
+        const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat(sampleOrder, sampleOrder.items!);
 
         expect(result.success).toBe(false);
         expect(result.message).toBe('Order not found');
@@ -92,7 +75,7 @@ describe('KiboToCapillaryOrderMapper', () => {
 
         (getOrderDetailsById as jest.Mock).mockResolvedValueOnce(mockOrder);
 
-        const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat('ORDER123');
+        const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat(sampleOrder, sampleOrder.items!);
 
         expect(result.success).toBe(false);
         expect(result.message).toBe('Customer email not found in order details');
@@ -108,7 +91,7 @@ describe('KiboToCapillaryOrderMapper', () => {
 
         (getOrderDetailsById as jest.Mock).mockResolvedValueOnce(mockOrder);
 
-        const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat('ORDER123');
+        const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat(sampleOrder, sampleOrder.items!);
 
         expect(result.success).toBe(true);
         expect(result.data?.lineItemsV2).toEqual([]);
@@ -117,8 +100,8 @@ describe('KiboToCapillaryOrderMapper', () => {
     it('should handle API errors', async () => {
         (getOrderDetailsById as jest.Mock).mockRejectedValueOnce(new Error('API Error'));
 
-        const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat('ORDER123');
-
+        const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat(sampleOrder, sampleOrder.items!);
+        
         expect(result.success).toBe(false);
         expect(result.message).toContain('Error mapping order: API Error');
     });

@@ -1,6 +1,7 @@
 import { sendOrderDetails } from '../../Capillary/Transactions/SendOrderDetails';
 import { KiboToCapillaryOrderMapper } from '../../Capillary/Transactions/KiboCapillaryOrderMapper';
 import { TokenService } from '../../Capillary/TokenService';
+import { sampleOrder } from './sampleOrder';
 
 // Mock fetch
 global.fetch = jest.fn();
@@ -48,7 +49,7 @@ describe('sendOrderDetails', () => {
             })
         });
 
-        const result = await sendOrderDetails(mockOrderId);
+        const result = await sendOrderDetails(sampleOrder, sampleOrder.items!);
 
         expect(result.success).toBe(true);
         expect(result.message).toBe('Transaction sent to Capillary successfully');
@@ -70,7 +71,7 @@ describe('sendOrderDetails', () => {
             message: 'Mapping failed'
         });
 
-        const result = await sendOrderDetails(mockOrderId);
+        const result = await sendOrderDetails(sampleOrder, sampleOrder.items!);
 
         expect(result.success).toBe(false);
         expect(result.message).toBe('Mapping failed');
@@ -85,7 +86,7 @@ describe('sendOrderDetails', () => {
 
         (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API Error'));
 
-        const result = await sendOrderDetails(mockOrderId);
+        const result = await sendOrderDetails(sampleOrder, sampleOrder.items!);
 
         expect(result.success).toBe(false);
         expect(result.message).toContain('Error sending order details: API Error');
@@ -97,7 +98,7 @@ describe('sendOrderDetails', () => {
             getToken: jest.fn().mockRejectedValue(new Error('Token Error'))
         });
 
-        const result = await sendOrderDetails(mockOrderId);
+        const result = await sendOrderDetails(sampleOrder, sampleOrder.items!);
 
         expect(result.success).toBe(false);
         expect(result.message).toContain('Error sending order details: Token Error');
@@ -121,7 +122,7 @@ describe('sendOrderDetails', () => {
             })
         });
 
-        const result = await sendOrderDetails(mockOrderId);
+        const result = await sendOrderDetails(sampleOrder, sampleOrder.items!);
 
         expect(result.success).toBe(false);
         expect(result.message).toBe('Failed to send transaction to Capillary');

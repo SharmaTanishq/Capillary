@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { sendOrderDetails } from '../Capillary/Transactions/SendOrderDetails';
+import { sampleOrder } from '../__tests__/Capillary/sampleOrder';
 
 // Load environment variables
 dotenv.config();
@@ -15,7 +16,7 @@ async function testSendOrder() {
     const testOrderId = 'TEST-ORDER-123';
     
     console.log(`Sending order ${testOrderId} to Capillary...`);
-    const result = await sendOrderDetails(testOrderId);
+    const result = await sendOrderDetails(sampleOrder, sampleOrder.items!);
     
     console.log('Result:', JSON.stringify(result, null, 2));
     

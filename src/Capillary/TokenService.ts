@@ -56,7 +56,7 @@ export class TokenService {
     // Cache the token with expiration (e.g., 23 Hours if token lasts 24 hour)
     this.tokenCache = {
       token,
-      expiresAt: Date.now() + 23 * 60 * 60 * 1000 // 23 hours in milliseconds
+      expiresAt: Date.now() + 3600 * 1000 // 3600 seconds (1 hour) in milliseconds
     };
 
     return token;

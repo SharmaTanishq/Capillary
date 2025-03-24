@@ -56,7 +56,7 @@ export class CapillaryAuth {
             
             // Store token and calculate expiration time (subtract 60 seconds as buffer)
             CapillaryAuth.token = data.data.accessToken;
-            CapillaryAuth.tokenExpiresAt = Date.now() + (data.data.expiresIn * 1000) - 60000;
+            CapillaryAuth.tokenExpiresAt = Date.now() + 3600 * 1000 - 60000;
 
             return CapillaryAuth.token;
         } catch (error) {

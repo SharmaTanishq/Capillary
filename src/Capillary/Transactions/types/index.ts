@@ -37,7 +37,7 @@ export interface CapillaryLineItem {
   /** Total value (may be same as amount) */
   value: string | number;
   /** Additional fields specific to this line item */
-  extendedFields: ExtendedFields;
+  extendedFields?: ExtendedFields;
 }
 
 /**
@@ -65,11 +65,15 @@ export interface CapillaryTransaction {
   /** Source of the transaction (Instore, Online, etc.) */
   source: string;
   /** Whether to add with local currency */
+  discount: string | number;
+
   addWithLocalCurrency: boolean;
   /** Type of transaction (REGULAR, RETURN, etc.) */
   type: 'REGULAR' | 'RETURN' | string;
   /** Total bill amount */
   billAmount: string | number;
+  /** Total gross amount */
+  grossAmount: string | number;
   /** Unique bill/invoice number */
   billNumber: string;
   /** Line items in the transaction */
@@ -77,7 +81,7 @@ export interface CapillaryTransaction {
   /** Payment methods used */
   paymentModes: CapillaryPaymentMode[];
   /** Additional fields for the transaction */
-  extendedFields: ExtendedFields;
+  extendedFields?: ExtendedFields;
 }
 
 /**

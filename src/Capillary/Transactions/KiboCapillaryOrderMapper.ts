@@ -57,16 +57,15 @@ export class KiboToCapillaryOrderMapper {
                 identifierType: "email",
                 identifierValue: customerEmail,
                 source: "Instore",
+                discount: orderDetails.discountTotal || 0,
                 addWithLocalCurrency: false,
                 type: customerExists ? "REGULAR" : "NOT_INTERESTED",
                 billAmount: String(orderDetails.total) || "0",
-                billNumber: orderDetails.id!,
+                grossAmount: String(orderDetails.total) || "0",
+                billNumber: orderDetails?.externalId || orderDetails.id!,
                 lineItemsV2: lineItems,
                 paymentModes: paymentModes,
-                extendedFields: {
-                    orderSource: "Kibo Commerce",
-                    orderDate: orderDetails.submittedDate || new Date().toISOString()
-                }
+               
             };
 
             return {
@@ -88,15 +87,13 @@ export class KiboToCapillaryOrderMapper {
         return orderItems?.map(item => ({
             description: item.product?.name || "",
             discount: null,
-            itemCode: item.product?.productCode || "",
-            amount: Number(item.total) || 0,
-            qty: String(item.quantity) || "1",
-            rate: Number(item.unitPrice?.saleAmount) || 0,
+            itemCode: item.product?.variationProductCode || "",
+            amount: Number(item.extendedTotal) ,
+            qty: String(item.quantity) ,
+            rate: Number(item.product?.price?.price) || 0,
             serial: 1,
-            value: String(item.total) || "0",
-            extendedFields: {
-                sku: item.product?.variationProductCode || ""
-            }
+            value: Number(item.extendedTotal) || 0,
+           
         })) || [];
     }
 

@@ -32,7 +32,7 @@ export class KiboToCapillaryOrderMapper {
                 };
             }
 
-            //const orderDetails: Order = orderResponse.synthesized;
+            
 
             // Extract customer email from order details
             const customerEmail = orderDetails.email;

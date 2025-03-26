@@ -65,7 +65,7 @@ export interface CapillaryTransaction {
   /** Source of the transaction (Instore, Online, etc.) */
   source: string;
   /** Whether to add with local currency */
-  discount: string | number;
+  discount?: string | number;
 
   addWithLocalCurrency: boolean;
   /** Type of transaction (REGULAR, RETURN, etc.) */
@@ -73,7 +73,7 @@ export interface CapillaryTransaction {
   /** Total bill amount */
   billAmount: string | number;
   /** Total gross amount */
-  grossAmount: string | number;
+  grossAmount?: string | number;
   /** Unique bill/invoice number */
   billNumber: string;
   /** Line items in the transaction */

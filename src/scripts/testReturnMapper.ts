@@ -1,50 +1,56 @@
 import dotenv from 'dotenv';
+import { SAMPLE_RETURN } from '../__tests__/Capillary/sampleReturn';
 import { KiboCapillaryReturnMapper } from '../Capillary/Transactions/KiboCapillaryReturnMapper';
-import { getFullyRefundedReturns } from '../KIBO/ReturnDetails';
+import { sendReturnDetails } from '../Capillary/Transactions/SendReturnDetails';
 
 // Load environment variables
 dotenv.config();
+
+// Add debug logging for environment variables
+console.log('Environment check:');
+console.log('CAPILLARY_URL:', process.env.CAPILLARY_URL);
 
 /**
  * Test script to verify the KiboCapillaryReturnMapper functionality
  */
 async function testReturnMapper() {
     try {
-        console.log('Testing KiboCapillaryReturnMapper...');
+        console.log('\nStarting return mapper test...');
         
-        // Get first fully refunded return
-        const returns = await getFullyRefundedReturns();
-        
-        if (!returns || !returns.items || returns.items.length === 0) {
-            console.log('No fully refunded returns found');
-            return;
-        }
-        
-        const firstReturn = returns.items[0];
-        
-        if (!firstReturn.id) {
-            console.log('Return ID not found in the first return');
-            return;
-        }
-        
-        console.log(`\nFound return order: ${firstReturn.id}`);
-        
-        console.log(`\nMapping Kibo return order ${firstReturn.id} to Capillary format...`);
-        
+        // Use the sample return ID
+        const returnId = SAMPLE_RETURN.id;
+        console.log(`Using return ID: ${returnId}`);
+
         // Map the return to Capillary format
-        const result = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(firstReturn.id);
-        
-        if (result.success && result.data) {
-            console.log('\nSuccessfully mapped return order to Capillary format!');
-            
-            // Output the complete object as JSON
-            console.log('\nComplete Mapped Object:');
-            console.log(JSON.stringify(result.data, null, 2));
+        console.log('Mapping return to Capillary format...');
+        const mappedReturn = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(returnId);
+
+        if (!mappedReturn.success) {
+            console.error('Failed to map return:', mappedReturn.message);
+            return;
+        }
+
+        console.log('\nMapped return data:');
+        console.log(JSON.stringify(mappedReturn.data, null, 2));
+
+        // Send the mapped return to Capillary
+        console.log('\nSending return to Capillary...');
+        const result = await sendReturnDetails(mappedReturn.data);
+
+        if (result.success) {
+            console.log('\nSuccessfully sent return to Capillary!');
+            console.log('Response:', JSON.stringify(result.data, null, 2));
         } else {
-            console.log('\n❌ Mapping failed:', result.message);
+            console.error('\nFailed to send return to Capillary:', result.message);
+            if (result.error) {
+                console.error('Error details:', JSON.stringify(result.error, null, 2));
+            }
         }
     } catch (error) {
         console.error('Error in test script:', error);
+        if (error instanceof Error) {
+            console.error('Error stack:', error.stack);
+        }
     }
 }
 

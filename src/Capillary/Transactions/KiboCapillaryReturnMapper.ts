@@ -2,6 +2,7 @@ import { Return, ReturnItem } from "@kibocommerce/rest-sdk/clients/Commerce";
 import { getReturnDetailsById } from "../../KIBO/ReturnDetails";
 import { CapillaryTransaction, CapillaryLineItem, CapillaryPaymentMode } from "./types";
 import doesCustomerExist from "../Customer";
+import { getOrderDetailsById, orderClient } from "../../KIBO/OrderDetails";
 
 /**
  * Maps a Kibo return to Capillary transaction format
@@ -29,7 +30,7 @@ export class KiboCapillaryReturnMapper {
             }
 
             // Extract customer email from return details
-            const customerEmail = String(returnDetails.customerAccountId || '');
+            const customerEmail = String(returnDetails.contact?.email || '');
 
             if (!customerEmail) {
                 return {
@@ -44,6 +45,10 @@ export class KiboCapillaryReturnMapper {
             // Map return payment modes
             const paymentModes: CapillaryPaymentMode[] = this.mapReturnPaymentModes(returnDetails);
 
+            const getOriginalOrderId = await orderClient.getOrder({orderId:returnDetails.originalOrderId || ""}).catch((e)=>{
+                console.error("Error fetching original order",e);
+                return undefined;
+            });
             // Create transaction data for return
             const transactionData: CapillaryTransaction = {
                 identifierType: "email",
@@ -51,16 +56,11 @@ export class KiboCapillaryReturnMapper {
                 source: "Instore",
                 addWithLocalCurrency: false,
                 type: "RETURN",
-                billAmount: String(returnDetails.refundAmount) || "0",
-                billNumber: returnId,
+                billAmount: String(returnDetails.refundAmount) ,
+                billNumber: getOriginalOrderId?.externalId || "",                
                 lineItemsV2: lineItems,
                 paymentModes: paymentModes,
-                extendedFields: {
-                    orderSource: "Kibo Commerce",
-                    orderDate: returnDetails.auditInfo?.createDate || new Date().toISOString(),
-                    returnReason: returnDetails.items?.[0]?.reasons?.[0]?.reason || "Not Specified",
-                    originalOrderId: returnDetails.originalOrderId || ""
-                }
+               
             };
 
             return {

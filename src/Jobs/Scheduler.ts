@@ -1,8 +1,11 @@
 import * as schedule from 'node-schedule';
 import { TokenService } from '../Capillary/TokenService';
 import { sendOrderDetails } from '../Capillary/Transactions/SendOrderDetails';
+import { sendReturnDetails } from '../Capillary/Transactions/SendReturnDetails';
 import { getFulFilledOrders, getOrderDetailsById } from '../KIBO/OrderDetails';
+import { getFullyRefundedReturns } from '../KIBO/ReturnDetails';
 import { CommerceRuntimeOrderItem } from '@kibocommerce/rest-sdk/clients/Commerce';
+import { KiboCapillaryReturnMapper } from '../Capillary/Transactions/KiboCapillaryReturnMapper';
 
 export class Scheduler {
     private static instance: Scheduler;
@@ -40,11 +43,9 @@ export class Scheduler {
                     console.log('Running order sync job...');
                     const token = await tokenService.getToken();
                     
-                    // TODO: Replace with actual order fetching logic
                     const orders = await getFulFilledOrders();
 
                     if(!orders.synthesized.items) return;
-                    
                     
                     await Promise.all(orders.synthesized.items.map(async (order) => {
                         try {
@@ -65,6 +66,52 @@ export class Scheduler {
                     }));
                 } catch (error) {
                     console.error('Error in order sync job:', error);
+                }
+            })
+        );
+
+        // Schedule return sync job (every 5 minutes)
+        this.jobs.push(
+            schedule.scheduleJob('*/5 * * * *', async () => {
+                try {
+                    console.log('Running return sync job...');
+                    const token = await tokenService.getToken();
+                    
+                    const returns = await getFullyRefundedReturns();
+
+                    if (!returns || !returns.items || returns.items.length === 0) {
+                        console.log('No fully refunded returns found');
+                        return;
+                    }
+
+                    await Promise.all(returns.items.map(async (returnOrder) => {
+                        try {
+                            if (!returnOrder.id) {
+                                console.log('Return ID not found in return order');
+                                return;
+                            }
+
+                            console.log(`Processing return ${returnOrder.id}...`);
+                            const mappedReturn = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(returnOrder.id);
+                            
+                            if (!mappedReturn.success) {
+                                console.error(`Failed to map return ${returnOrder.id}:`, mappedReturn.message);
+                                return;
+                            }
+
+                            const result = await sendReturnDetails(mappedReturn.data);
+                            
+                            if (result.success) {
+                                console.log(`Successfully sent return ${returnOrder.id} to Capillary`);
+                            } else {
+                                console.error(`Failed to send return ${returnOrder.id} to Capillary:`, result.message);
+                            }
+                        } catch (error) {
+                            console.error(`Error processing return ${returnOrder.id}:`, error);
+                        }
+                    }));
+                } catch (error) {
+                    console.error('Error in return sync job:', error);
                 }
             })
         );

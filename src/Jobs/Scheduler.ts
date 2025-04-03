@@ -38,7 +38,7 @@ export class Scheduler {
 
         // Schedule order sync job (every 2 minutes)
         this.jobs.push(
-            schedule.scheduleJob('*/2 * * * *', async () => {
+            schedule.scheduleJob('*/5 * * * *', async () => {
                 try {
                     console.log('Running order sync job...');
                     const token = await tokenService.getToken();
@@ -72,7 +72,7 @@ export class Scheduler {
 
         // Schedule return sync job (every 5 minutes)
         this.jobs.push(
-            schedule.scheduleJob('*/1 * * * *', async () => {
+            schedule.scheduleJob('*/8 * * * *', async () => {
                 try {
                     console.log('Running return sync job...');
                     const token = await tokenService.getToken();

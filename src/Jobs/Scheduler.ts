@@ -72,7 +72,7 @@ export class Scheduler {
 
         // Schedule return sync job (every 5 minutes)
         this.jobs.push(
-            schedule.scheduleJob('*/10 * * * *', async () => {
+            schedule.scheduleJob('*/1 * * * *', async () => {
                 try {
                     console.log('Running return sync job...');
                     const token = await tokenService.getToken();
@@ -103,6 +103,7 @@ export class Scheduler {
                             
                             if (result.success) {
                                 console.log(`Successfully sent return ${returnOrder.id} to Capillary`);
+                                console.log(result.data?.loyaltyDetails)
                             } else {
                                 console.error(`Failed to send return ${returnOrder.id} to Capillary:`, result.message);
                             }

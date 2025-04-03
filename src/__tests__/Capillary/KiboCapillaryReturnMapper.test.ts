@@ -1,6 +1,6 @@
 import { KiboCapillaryReturnMapper } from '../../Capillary/Transactions/KiboCapillaryReturnMapper';
 import { getOrderDetailsById } from '../../KIBO/OrderDetails';
-
+import { SAMPLE_RETURN } from './sampleReturn';
 // Mock the getOrderDetailsById function
 jest.mock('../../KIBO/OrderDetails');
 
@@ -52,7 +52,7 @@ describe('KiboCapillaryReturnMapper', () => {
 
         (getOrderDetailsById as jest.Mock).mockResolvedValueOnce(mockReturn);
 
-        const result = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat('RETURN123');
+        const result = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(SAMPLE_RETURN);
 
         expect(result.success).toBe(true);
         expect(result.data).toEqual({
@@ -101,7 +101,7 @@ describe('KiboCapillaryReturnMapper', () => {
     it('should handle missing return order', async () => {
         (getOrderDetailsById as jest.Mock).mockResolvedValueOnce(null);
 
-        const result = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat('INVALID_RETURN');
+        const result = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(SAMPLE_RETURN);
 
         expect(result.success).toBe(false);
         expect(result.message).toBe('Return order not found');
@@ -121,7 +121,7 @@ describe('KiboCapillaryReturnMapper', () => {
 
         (getOrderDetailsById as jest.Mock).mockResolvedValueOnce(mockReturn);
 
-        const result = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat('RETURN123');
+        const result = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(SAMPLE_RETURN);
 
         expect(result.success).toBe(false);
         expect(result.message).toBe('Customer email not found in return details');
@@ -130,7 +130,7 @@ describe('KiboCapillaryReturnMapper', () => {
     it('should handle API errors', async () => {
         (getOrderDetailsById as jest.Mock).mockRejectedValueOnce(new Error('API Error'));
 
-        const result = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat('RETURN123');
+        const result = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(SAMPLE_RETURN);
 
         expect(result.success).toBe(false);
         expect(result.message).toContain('Error mapping return order: API Error');
@@ -153,7 +153,7 @@ describe('KiboCapillaryReturnMapper', () => {
 
         (getOrderDetailsById as jest.Mock).mockResolvedValueOnce(mockReturn);
 
-        const result = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat('RETURN123');
+        const result = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(SAMPLE_RETURN);
 
         expect(result.success).toBe(true);
         expect(result.data?.lineItemsV2).toEqual([]);

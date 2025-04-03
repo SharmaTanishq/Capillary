@@ -98,12 +98,12 @@ export class Scheduler {
                                 console.error(`Failed to map return ${returnOrder.id}:`, mappedReturn.message);
                                 return;
                             }
-
+                            
                             const result = await sendReturnDetails(mappedReturn.data);
                             
                             if (result.success) {
-                                console.log(`Successfully sent return ${returnOrder.id} to Capillary`);
-                                console.log(result.data?.loyaltyDetails)
+                                console.info(`Successfully sent return ${returnOrder.id} to Capillary`);
+                                console.table(result.data)
                             } else {
                                 console.error(`Failed to send return ${returnOrder.id} to Capillary:`, result.message);
                             }

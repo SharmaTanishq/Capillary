@@ -16,9 +16,9 @@ export const getReturnDetailsById = async (returnId:string): Promise<Return | un
 export const getFullyRefundedReturns = async():Promise<ReturnCollection | undefined>=>{
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
    
-    const filter = `refundStatus eq FullyRefunded`;
+    const filter = `refundStatus eq FullyRefunded and createDate ge ${oneHourAgo}`;
    
-    const returns = await returnClient.getReturns({filter:filter});
+    const returns = await returnClient.getReturns({filter:filter,pageSize:1});
     return returns;
 }
 

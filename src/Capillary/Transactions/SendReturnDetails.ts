@@ -35,7 +35,7 @@ export const sendReturnDetails = async (returnData: any): Promise<CapillaryTrans
         const url = `${baseUrl}/v2/transactions?${queryString}`;
         
         console.log('Sending request to:', url);
-        
+        console.log(returnData);
         const response = await fetch(
             url,
             {

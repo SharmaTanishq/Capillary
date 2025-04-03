@@ -13,14 +13,14 @@ export class KiboCapillaryReturnMapper {
      * @param returnId The Kibo return ID to map
      * @returns The mapped Capillary transaction data or error
      */
-    public static async mapReturnToCapillaryFormat(returnId: string): Promise<{
+    public static async mapReturnToCapillaryFormat(returnDetails:Return): Promise<{
         success: boolean;
         data?: CapillaryTransaction;
         message?: string;
     }> {
         try {
             // Get return details from Kibo
-            const returnDetails = await getReturnDetailsById(returnId);
+            
 
             if (!returnDetails) {
                 return {
@@ -44,8 +44,14 @@ export class KiboCapillaryReturnMapper {
 
             // Map return payment modes
             const paymentModes: CapillaryPaymentMode[] = this.mapReturnPaymentModes(returnDetails);
-
-            const getOriginalOrderId = await orderClient.getOrder({orderId:returnDetails.originalOrderId || ""}).catch((e)=>{
+            
+            if(!returnDetails.originalOrderId){
+                return {
+                    success: false,
+                    message: "Original order ID not found in return details"
+                };
+            }
+            const getOriginalOrderId = await orderClient.getOrder({orderId:returnDetails.originalOrderId}).catch((e)=>{
                 console.error("Error fetching original order",e);
                 return undefined;
             });

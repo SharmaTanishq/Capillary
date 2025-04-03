@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import ip from 'ip';
 import { CouponService } from './Capillary/Rewards';
-
+import { Scheduler } from './Jobs/Scheduler';
 // Load environment variables
 dotenv.config();
 
@@ -128,7 +128,7 @@ app.listen(PORT, async () => {
     
     // Start scheduler if enabled
     if (process.env.SCHEDULER_RUNNING === 'true') {
-        const { Scheduler } = require('./Jobs/Scheduler');
+          
         const scheduler = Scheduler.getInstance();
         await scheduler.startJobs();
         console.log('Scheduler started successfully');

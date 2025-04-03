@@ -72,7 +72,7 @@ export class Scheduler {
 
         // Schedule return sync job (every 5 minutes)
         this.jobs.push(
-            schedule.scheduleJob('*/5 * * * *', async () => {
+            schedule.scheduleJob('*/10 * * * *', async () => {
                 try {
                     console.log('Running return sync job...');
                     const token = await tokenService.getToken();
@@ -92,7 +92,7 @@ export class Scheduler {
                             }
 
                             console.log(`Processing return ${returnOrder.id}...`);
-                            const mappedReturn = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(returnOrder.id);
+                            const mappedReturn = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(returnOrder);
                             
                             if (!mappedReturn.success) {
                                 console.error(`Failed to map return ${returnOrder.id}:`, mappedReturn.message);

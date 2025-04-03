@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import { SAMPLE_RETURN } from '../__tests__/Capillary/sampleReturn';
 import { KiboCapillaryReturnMapper } from '../Capillary/Transactions/KiboCapillaryReturnMapper';
 import { sendReturnDetails } from '../Capillary/Transactions/SendReturnDetails';
+import { getReturnDetailsById } from '../KIBO/ReturnDetails';
 
 // Load environment variables
 dotenv.config();
@@ -23,7 +24,13 @@ async function testReturnMapper() {
 
         // Map the return to Capillary format
         console.log('Mapping return to Capillary format...');
-        const mappedReturn = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(returnId);
+        const returnDetails = await getReturnDetailsById(returnId);
+        
+        if (!returnDetails) {
+            console.error('Failed to fetch return details');
+            return;
+        }
+        const mappedReturn = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(returnDetails);
 
         if (!mappedReturn.success) {
             console.error('Failed to map return:', mappedReturn.message);

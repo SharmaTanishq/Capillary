@@ -11,6 +11,6 @@ export const kiboConfiguration = new Configuration({
   clientId: process.env.KIBO_CLIENT_ID,
   pciHost: '',
   authHost: process.env.KIBO_API_HOST,
-  apiEnv: 'sandbox',
+  apiEnv: process.env.KIBO_API_ENV,
 })
 

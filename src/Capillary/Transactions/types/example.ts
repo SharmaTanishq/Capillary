@@ -16,8 +16,10 @@ const lineItems: CapillaryLineItem[] = [
         serial: 1,
         value: "400",
         extendedFields: {
-            color: "blue",
-            size: "M"
+            amount_excluding_tax: 100,
+            amount_including_tax: 120,
+            vat_amount: 20,
+            service_tax_amount: 10
         }
     },
     {
@@ -30,7 +32,10 @@ const lineItems: CapillaryLineItem[] = [
         serial: 2,
         value: "300",
         extendedFields: {
-            color: "red"
+            amount_excluding_tax: 100,
+            amount_including_tax: 120,
+            vat_amount: 20,
+            service_tax_amount: 10
         }
     }
 ];
@@ -66,9 +71,10 @@ const exampleTransaction: CapillaryTransaction = {
     lineItemsV2: lineItems,
     paymentModes: paymentModes,
     extendedFields: {
-        storeId: "STORE001",
-        salesAssociate: "John Doe",
-        orderDate: new Date().toISOString()
+        amount_excluding_tax: 100,
+        amount_including_tax: 120,
+        vat_amount: 20,
+        service_tax_amount: 10
     }
 };
 
@@ -98,8 +104,10 @@ export function createSampleTransaction(
             }
         ],
         extendedFields: {
-            orderSource: "Example",
-            orderDate: new Date().toISOString()
+            amount_excluding_tax: 100,
+            amount_including_tax: 120,
+            vat_amount: 20,
+            service_tax_amount: 10
         }
     };
 } 

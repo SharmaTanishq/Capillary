@@ -1,8 +1,9 @@
 import { Return, ReturnItem } from "@kibocommerce/rest-sdk/clients/Commerce";
 import { getReturnDetailsById } from "../../KIBO/ReturnDetails";
-import { CapillaryTransaction, CapillaryLineItem, CapillaryPaymentMode } from "./types";
+import { CapillaryReturnPayload, CapillaryReturnLineItem, CapillaryReturnPaymentMode } from "./types/return";
 import doesCustomerExist from "../Customer";
 import { getOrderDetailsById, orderClient } from "../../KIBO/OrderDetails";
+import { getTenderTypeCode } from "./utils";
 
 /**
  * Maps a Kibo return to Capillary transaction format
@@ -10,18 +11,15 @@ import { getOrderDetailsById, orderClient } from "../../KIBO/OrderDetails";
 export class KiboCapillaryReturnMapper {
     /**
      * Maps a Kibo return ID to Capillary transaction format
-     * @param returnId The Kibo return ID to map
-     * @returns The mapped Capillary transaction data or error
+     * @param returnDetails The Kibo return details to map
+     * @returns The mapped Capillary return payload or error
      */
-    public static async mapReturnToCapillaryFormat(returnDetails:Return): Promise<{
+    public static async mapReturnToCapillaryFormat(returnDetails: Return): Promise<{
         success: boolean;
-        data?: CapillaryTransaction;
+        data?: CapillaryReturnPayload;
         message?: string;
     }> {
         try {
-            // Get return details from Kibo
-            
-
             if (!returnDetails) {
                 return {
                     success: false,
@@ -29,49 +27,65 @@ export class KiboCapillaryReturnMapper {
                 };
             }
 
-            // Extract customer email from return details
-            const customerEmail = String(returnDetails.contact?.email || '');
-
-            if (!customerEmail) {
+            // Extract identifierValue (externalId or fallback)
+            const identifierValue = returnDetails.contact?.email || "";
+            if (!identifierValue) {
                 return {
                     success: false,
-                    message: "Customer email not found in return details"
+                    message: "Identifier value not found in return details"
                 };
             }
+
+            const customerExists = await doesCustomerExist(identifierValue);
 
             // Map return line items
-            const lineItems: CapillaryLineItem[] = this.mapReturnLineItems(returnDetails);
+            const lineItems: CapillaryReturnLineItem[] = this.mapReturnLineItems(returnDetails);
 
             // Map return payment modes
-            const paymentModes: CapillaryPaymentMode[] = this.mapReturnPaymentModes(returnDetails);
+            const paymentModes: CapillaryReturnPaymentMode[] = this.mapReturnPaymentModes(returnDetails);
+
+            // Placeholder/defaults for new fields
+            const customFields = { CountryCode: "ID", membership_card: null };
+            const extendedFields = { order_channel: "DigitalLoyaltyCard", "membership_card_swiped ": "BMW" };
+            const appliedPromotionIdentifiers: string[] = [];
+
+            // Fetch original order details for billNumber and billingDate
+            let billNumber = "";
+            let billingDate = new Date().toISOString();
             
-            if(!returnDetails.originalOrderId){
-                return {
-                    success: false,
-                    message: "Original order ID not found in return details"
-                };
+            if (returnDetails.originalOrderId) {
+                const originalOrder = await orderClient.getOrder({ orderId: returnDetails.originalOrderId }).catch(() => undefined);
+                billNumber = originalOrder?.externalId || "";
+                billingDate = originalOrder?.submittedDate || billingDate;
             }
-            const getOriginalOrderId = await orderClient.getOrder({orderId:returnDetails.originalOrderId}).catch((e)=>{
-                console.error("Error fetching original order",e);
-                return undefined;
-            });
-            // Create transaction data for return
-            const transactionData: CapillaryTransaction = {
+
+            // Create Capillary return payload
+            const returnPayload: CapillaryReturnPayload = {
                 identifierType: "email",
-                identifierValue: customerEmail,
-                source: "Instore",
-                addWithLocalCurrency: false,
-                type: "RETURN",
-                billAmount: String(returnDetails.refundAmount) ,
-                billNumber: getOriginalOrderId?.externalId || "",                
+                identifierValue,
+                source: "INSTORE",
+                accountId: null,
+                type: customerExists ? "RETURN" : "NI_RETURN",
+                returnType: "LINE_ITEM",
+                billNumber,
+                discount: 0,
+                billAmount: String(returnDetails.refundAmount ?? "0.0000"),
+                note: "",
+                grossAmount: null,
+                deliveryStatus: null,
+                purchaseTime: null,
+                billingDate,
+                currencyCode: "USD",
+                appliedPromotionIdentifiers,
+                paymentModes,
                 lineItemsV2: lineItems,
-                paymentModes: paymentModes,
-               
+                
+                
             };
 
             return {
                 success: true,
-                data: transactionData
+                data: returnPayload
             };
         } catch (error) {
             return {
@@ -84,34 +98,41 @@ export class KiboCapillaryReturnMapper {
     /**
      * Maps Kibo return items to Capillary line items
      */
-    private static mapReturnLineItems(returnDetails: Return): CapillaryLineItem[] {
+    private static mapReturnLineItems(returnDetails: Return): CapillaryReturnLineItem[] {
         return returnDetails.items?.map((item: ReturnItem, index: number) => ({
-            description: item.product?.name || "",
-            discount: null,
+            type: "RETURN",
+            returnType: "LINE_ITEM",
+            // parentOrderItemId does not exist on ReturnItem; using empty string as placeholder
+            parentBillNumber: "", // TODO: Map to correct field if available
             itemCode: item.product?.productCode || "",
             amount: Number(item.refundAmount) || 0,
-            qty: String(item.quantityReceived) || "1",
             rate: Number(item.product?.price?.price) || 0,
-            serial: index + 1,
-            value: String(Number(item.refundAmount)) || "0",
+            discount: 0,
+            value: Number(item.refundAmount) || 0,
+            qty: Number(item.quantityReceived) || 1,
+            description: item.product?.name || "",
+            serial: String(index + 1),
             extendedFields: {
-                sku: item.product?.variationProductCode || "",
-                returnReason: item.reasons?.[0]?.reason || returnDetails.items?.[0]?.reasons?.[0]?.reason || "Not Specified"
-            }
+                
+                vat_amount: 0,
+                service_tax_amount: 0,
+                amount_including_tax: 0,
+                amount_excluding_tax: 0
+            },
+            customFields: null,
+            appliedPromotionIdentifiers: []
         })) || [];
     }
 
     /**
      * Maps Kibo return payment information to Capillary payment modes
      */
-    private static mapReturnPaymentModes(returnDetails: Return): CapillaryPaymentMode[] {
-        return [{
-            mode: returnDetails.payments?.[0]?.paymentType || "Credit",
-            value: Number(returnDetails.refundAmount) || 0,
-            notes: `Return for order ${returnDetails.originalOrderId}`,
-            attributes: {
-                returnReason: returnDetails.items?.[0]?.reasons?.[0]?.reason || "Not Specified"
-            }
-        }];
+    private static mapReturnPaymentModes(returnDetails: Return): CapillaryReturnPaymentMode[] {
+        return (returnDetails.payments || []).map(payment => ({
+            attributes: null,
+            notes: null,
+            mode: getTenderTypeCode(payment.paymentType ?? ""),
+            value: String(payment.amountRequested ?? returnDetails.refundAmount ?? "0.0000")
+        }));
     }
 }

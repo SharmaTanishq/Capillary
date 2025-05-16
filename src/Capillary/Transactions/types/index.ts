@@ -6,7 +6,11 @@
  * Extended fields for additional metadata
  */
 export interface ExtendedFields {
-  [key: string]: string | number | boolean | null | undefined;
+  vat_amount?: number;
+  service_tax_amount?: number;
+  amount_including_tax?: number;
+  amount_excluding_tax?: number;
+  
 }
 
 /**

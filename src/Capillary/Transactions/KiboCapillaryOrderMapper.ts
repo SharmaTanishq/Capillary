@@ -93,7 +93,12 @@ export class KiboToCapillaryOrderMapper {
             rate: Number(item.product?.price?.price) || 0,
             serial: 1,
             value: Number(item.extendedTotal) || 0,
-           
+            extendedFields: {
+                amount_excluding_tax: Number(item.product?.price?.price) || 0,
+                amount_including_tax: Number(item.product?.price?.price) || 0,
+                vat_amount: Number(item.product?.price?.price) || 0,
+                service_tax_amount: Number(item.product?.price?.price) || 0
+            }
         })) || [];
     }
 

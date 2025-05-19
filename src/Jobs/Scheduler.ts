@@ -38,7 +38,7 @@ export class Scheduler {
 
         // Schedule order sync job (every 2 minutes)
         this.jobs.push(
-            schedule.scheduleJob('*/5 * * * *', async () => {
+            schedule.scheduleJob('*/1 * * * *', async () => {
                 try {
                     console.log('Running order sync job...');
                     const token = await tokenService.getToken();
@@ -46,13 +46,14 @@ export class Scheduler {
                     const orders = await getFulFilledOrders();
 
                     if(!orders.synthesized.items) return;
+                    if(!orders.unSynthesized.items) return;
                     
-                    await Promise.all(orders.synthesized.items.map(async (order) => {
+                    await Promise.all(orders.unSynthesized.items.map(async (order) => {
                         try {
                             console.log(`Processing order ${order.id}...`);
                             const matchingSynthesizedOrders = orders.synthesized.items?.filter(synth => synth.id === order.id);
                             const synthesizedItems:CommerceRuntimeOrderItem[] = matchingSynthesizedOrders?.[0]?.items || [];
-                            const result = await sendOrderDetails(order,synthesizedItems);
+                            const result = await sendOrderDetails({orderDetails:order,orderItems:synthesizedItems});
                             if (result.success) {
                                 console.log(`Successfully processed order ${order.id}`);
                                 // TODO: Mark order as processed

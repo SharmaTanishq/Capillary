@@ -16,7 +16,7 @@ async function testOrderMapper() {
     
     console.log(`Mapping Kibo order ${sampleOrder.id} to Capillary format...`);
     
-    const order = await getOrderDetailsById("18fd70211d246800014d21ee000f42b6");
+    const order = await getOrderDetailsById("192ba3bb57d1090001c4e322000f42b6");
     if(!order || !order?.synthesized || !order?.unSynthesized.items) {
       console.log("Order not found");
       return;

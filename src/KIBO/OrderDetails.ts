@@ -8,7 +8,7 @@ export const getFulFilledOrders = async (): Promise<{unSynthesized:OrderCollecti
 
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();    
     
-    const filter = `FulfillmentStatus eq Fulfilled and closedDate ge ${oneHourAgo} `;
+    const filter = `FulfillmentStatus eq Fulfilled and closedDate ge ${oneHourAgo}`;
 
     const data = await orderClient.getOrders({filter: filter});
     const synthesized = await orderClient.getOrders({filter: filter, mode: "synthesized"});

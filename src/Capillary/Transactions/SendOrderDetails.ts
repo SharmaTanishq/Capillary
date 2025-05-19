@@ -8,7 +8,7 @@ import { CapillaryTransaction, CapillaryTransactionResponse, CapillaryTransactio
  * @param orderId The Kibo order ID to send to Capillary
  * @returns Response from Capillary API or error
  */
-export async function sendOrderDetails(orderDetails:Order,orderItems:CommerceRuntimeOrderItem[]): Promise<CapillaryTransactionResponse> {
+export async function sendOrderDetails({orderDetails,orderItems}:{orderDetails:Order,orderItems:CommerceRuntimeOrderItem[]}): Promise<CapillaryTransactionResponse> {
     try {
         // Map Kibo order to Capillary format
         const mappingResult = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat(orderDetails,orderItems);

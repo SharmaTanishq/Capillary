@@ -87,7 +87,7 @@ export class KiboToCapillaryOrderMapper {
     private static mapLineItems(orderItems: CommerceRuntimeOrderItem[]): CapillaryLineItem[] {
         return orderItems?.map(item => ({
             description: item.product?.name || "",
-            discount: null,
+            discount: item.productDiscount?.impact || 0,
             itemCode: item.product?.variationProductCode || "",
             amount: Number(item.extendedTotal) ,
             qty: String(item.quantity) ,
@@ -95,10 +95,10 @@ export class KiboToCapillaryOrderMapper {
             serial: 1,
             value: Number(item.extendedTotal) || 0,
             extendedFields: {
-                amount_excluding_tax: Number(item.product?.price?.price) || 0,
-                amount_including_tax: Number(item.product?.price?.price) || 0,
-                vat_amount: Number(item.product?.price?.price) || 0,
-                service_tax_amount: Number(item.product?.price?.price) || 0
+                amount_excluding_tax: item.product?.price?.price!  || 0,
+                amount_including_tax: item.product?.price?.price! + item.itemTaxTotal! || 0,
+                vat_amount: item.itemTaxTotal! || 0,
+                service_tax_amount:  0
             }
         })) || [];
     }

@@ -24,7 +24,7 @@ async function testOrderMapper() {
     
     // Map the sample order to Capillary format
     //const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat(order?.unSynthesized, order?.synthesized?.items!);
-    await sendOrderDetails(order?.unSynthesized, order?.synthesized?.items!).then(response => {
+    await sendOrderDetails({orderDetails:order?.unSynthesized,orderItems:order?.synthesized?.items!}).then(response => {
       console.log(response);
     });
     // if (result.success && result.data) {

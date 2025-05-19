@@ -16,7 +16,7 @@ async function testSendOrder() {
     const testOrderId = 'TEST-ORDER-123';
     
     console.log(`Sending order ${testOrderId} to Capillary...`);
-    const result = await sendOrderDetails(sampleOrder, sampleOrder.items!);
+    const result = await sendOrderDetails({orderDetails:sampleOrder,orderItems:sampleOrder.items!});
     
     console.log('Result:', JSON.stringify(result, null, 2));
     

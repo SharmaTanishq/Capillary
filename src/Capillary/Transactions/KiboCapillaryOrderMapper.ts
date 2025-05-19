@@ -109,9 +109,9 @@ export class KiboToCapillaryOrderMapper {
     private static mapPaymentModes(orderDetails: Order): CapillaryPaymentMode[] {
         return orderDetails.payments?.map(payment => ({
             mode: getTenderTypeCode(payment.paymentType ?? ""),
-            value: Number(payment.amountRequested ?? payment.amountCollected ?? "0.0000"),
-            notes: `Payment for order ${orderDetails.id}`,
-            attributes: {}
+            value: Number(payment.amountCollected || "0"),
+            //notes: `Payment for order ${orderDetails.id}`,
+            //attributes: {}
         })) || [];
     }
 } 

@@ -53,9 +53,9 @@ export interface CapillaryPaymentMode {
   /** Amount paid using this payment mode */
   value: number;
   /** Additional notes about this payment */
-  notes: string;
+  notes?: string;
   /** Additional attributes for this payment mode */
-  attributes: PaymentAttributes;
+  attributes?: PaymentAttributes;
 }
 
 /**

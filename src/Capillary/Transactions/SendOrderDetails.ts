@@ -38,6 +38,9 @@ export async function sendOrderDetails(orderDetails:Order,orderItems:CommerceRun
             .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
             .join('&');
 
+        console.log(
+           `Transaction Data for ${orderDetails.externalId}`,transactionData);
+
         // Make POST request to Capillary API
         const response = await fetch(
             `${process.env.CAPILLARY_URL}/v2/transactions?${queryString}`,
@@ -64,10 +67,11 @@ export async function sendOrderDetails(orderDetails:Order,orderItems:CommerceRun
         }
 
         const responseData = await response.json();
+        console.log(JSON.stringify(responseData, null, 2));
         return {
             success: true,
             message: "Transaction sent to Capillary successfully",
-            data: responseData
+            data: responseData.errors[0]
         };
 
     } catch (error) {

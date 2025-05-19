@@ -1,6 +1,7 @@
 import { CommerceRuntimeOrderItem, Order, OrderItemCollection } from "@kibocommerce/rest-sdk/clients/Commerce";
 import { CapillaryTransaction, CapillaryLineItem, CapillaryPaymentMode } from "./types";
 import doesCustomerExist from "../Customer";
+import { getTenderTypeCode } from "./utils";
 /**
  * Maps a Kibo order to Capillary transaction format
  * 
@@ -106,11 +107,11 @@ export class KiboToCapillaryOrderMapper {
      * Maps Kibo payment information to Capillary payment modes
      */
     private static mapPaymentModes(orderDetails: Order): CapillaryPaymentMode[] {
-        return [{
-            mode: orderDetails.billingInfo?.paymentType || "Credit",
-            value: Number(orderDetails.total) || 0,
+        return orderDetails.payments?.map(payment => ({
+            mode: getTenderTypeCode(payment.paymentType ?? ""),
+            value: Number(payment.amountRequested ?? payment.amountCollected ?? "0.0000"),
             notes: `Payment for order ${orderDetails.id}`,
             attributes: {}
-        }];
+        })) || [];
     }
 } 

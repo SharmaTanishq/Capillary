@@ -38,7 +38,7 @@ export class Scheduler {
 
         // Schedule order sync job (every 2 minutes)
         this.jobs.push(
-            schedule.scheduleJob('*/1 * * * *', async () => {
+            schedule.scheduleJob('*/5 * * * *', async () => {
                 try {
                     console.log('Running order sync job...');
                     const token = await tokenService.getToken();

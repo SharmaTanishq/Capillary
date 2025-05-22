@@ -72,51 +72,51 @@ export class Scheduler {
         );
 
         // Schedule return sync job (every 5 minutes)
-        // this.jobs.push(
-        //     schedule.scheduleJob('*/8 * * * *', async () => {
-        //         try {
-        //             console.log('Running return sync job...');
-        //             const token = await tokenService.getToken();
+        this.jobs.push(
+            schedule.scheduleJob('*/8 * * * *', async () => {
+                try {
+                    console.log('Running return sync job...');
+                    const token = await tokenService.getToken();
                     
-        //             const returns = await getFullyRefundedReturns();
+                    const returns = await getFullyRefundedReturns();
 
-        //             if (!returns || !returns.items || returns.items.length === 0) {
-        //                 console.log('No fully refunded returns found');
-        //                 return;
-        //             }
+                    if (!returns || !returns.items || returns.items.length === 0) {
+                        console.log('No fully refunded returns found');
+                        return;
+                    }
 
-        //             await Promise.all(returns.items.map(async (returnOrder) => {
-        //                 try {
-        //                     if (!returnOrder.id) {
-        //                         console.log('Return ID not found in return order');
-        //                         return;
-        //                     }
+                    await Promise.all(returns.items.map(async (returnOrder) => {
+                        try {
+                            if (!returnOrder.id) {
+                                console.log('Return ID not found in return order');
+                                return;
+                            }
 
-        //                     console.log(`Processing return ${returnOrder.id}...`);
-        //                     const mappedReturn = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(returnOrder);
+                            console.log(`Processing return ${returnOrder.id}...`);
+                            const mappedReturn = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(returnOrder);
                             
-        //                     if (!mappedReturn.success) {
-        //                         console.error(`Failed to map return ${returnOrder.id}:`, mappedReturn.message);
-        //                         return;
-        //                     }
+                            if (!mappedReturn.success) {
+                                console.error(`Failed to map return ${returnOrder.id}:`, mappedReturn.message);
+                                return;
+                            }
                             
-        //                     const result = await sendReturnDetails(mappedReturn.data);
+                            const result = await sendReturnDetails(mappedReturn.data);
                             
-        //                     if (result.success) {
-        //                         console.info(`Successfully sent return ${returnOrder.id} to Capillary`);
-        //                         console.table(result.data)
-        //                     } else {
-        //                         console.error(`Failed to send return ${returnOrder.id} to Capillary:`, result.message);
-        //                     }
-        //                 } catch (error) {
-        //                     console.error(`Error processing return ${returnOrder.id}:`, error);
-        //                 }
-        //             }));
-        //         } catch (error) {
-        //             console.error('Error in return sync job:', error);
-        //         }
-        //     })
-        // );
+                            if (result.success) {
+                                console.info(`Successfully sent return ${returnOrder.id} to Capillary`);
+                                console.table(result.data)
+                            } else {
+                                console.error(`Failed to send return ${returnOrder.id} to Capillary:`, result.message);
+                            }
+                        } catch (error) {
+                            console.error(`Error processing return ${returnOrder.id}:`, error);
+                        }
+                    }));
+                } catch (error) {
+                    console.error('Error in return sync job:', error);
+                }
+            })
+        );
 
         // Schedule failed orders retry job (every 30 minutes)
         // this.jobs.push(

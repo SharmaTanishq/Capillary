@@ -14,6 +14,10 @@ export class KiboCapillaryReturnMapper {
      * @param returnDetails The Kibo return details to map
      * @returns The mapped Capillary return payload or error
      */
+
+    private static billNumber: string;
+    private static billingDate: string;
+
     public static async mapReturnToCapillaryFormat(returnDetails: Return): Promise<{
         success: boolean;
         data?: CapillaryReturnPayload;
@@ -39,44 +43,39 @@ export class KiboCapillaryReturnMapper {
             const customerExists = await doesCustomerExist(identifierValue);
 
             // Map return line items
-            const lineItems: CapillaryReturnLineItem[] = this.mapReturnLineItems(returnDetails);
+            
 
             // Map return payment modes
             const paymentModes: CapillaryReturnPaymentMode[] = this.mapReturnPaymentModes(returnDetails);
 
-            // Placeholder/defaults for new fields
-            const customFields = { CountryCode: "ID", membership_card: null };
-            const extendedFields = { order_channel: "DigitalLoyaltyCard", "membership_card_swiped ": "BMW" };
-            const appliedPromotionIdentifiers: string[] = [];
+            
 
             // Fetch original order details for billNumber and billingDate
-            let billNumber = "";
+            
             let billingDate = new Date().toISOString();
             
             if (returnDetails.originalOrderId) {
                 const originalOrder = await orderClient.getOrder({ orderId: returnDetails.originalOrderId }).catch(() => undefined);
-                billNumber = originalOrder?.externalId || "";
-                billingDate = originalOrder?.submittedDate || billingDate;
+                this.billNumber = originalOrder?.externalId || "";
+                this.billingDate = new Date(originalOrder?.submittedDate || billingDate).toISOString().split('.')[0]+"Z";
             }
-
+            
+            const lineItems: CapillaryReturnLineItem[] = this.mapReturnLineItems(returnDetails,this.billNumber);
+            console.log(returnDetails.refundAmount)
             // Create Capillary return payload
             const returnPayload: CapillaryReturnPayload = {
                 identifierType: "email",
                 identifierValue,
-                source: "INSTORE",
-                accountId: null,
+                source: "INSTORE",                
                 type: customerExists ? "RETURN" : "NI_RETURN",
                 returnType: "LINE_ITEM",
-                billNumber,
+                billNumber: returnDetails?.returnNumber?.toString() || "",
                 discount: 0,
-                billAmount: String(returnDetails.refundAmount ?? "0.0000"),
-                note: "",
-                grossAmount: null,
-                deliveryStatus: null,
-                purchaseTime: null,
-                billingDate,
-                currencyCode: "USD",
-                appliedPromotionIdentifiers,
+                billAmount: Number(returnDetails.productLossTotal ?? "0.0000"),
+                grossAmount: Number(returnDetails.productLossTotal ?? "0.0000"),
+                billingDate: this.billingDate,
+                
+                
                 paymentModes,
                 lineItemsV2: lineItems,
                 
@@ -98,29 +97,25 @@ export class KiboCapillaryReturnMapper {
     /**
      * Maps Kibo return items to Capillary line items
      */
-    private static mapReturnLineItems(returnDetails: Return): CapillaryReturnLineItem[] {
+    private static mapReturnLineItems(returnDetails: Return,billNumber:string): CapillaryReturnLineItem[] {
         return returnDetails.items?.map((item: ReturnItem, index: number) => ({
-            type: "RETURN",
-            returnType: "LINE_ITEM",
-            // parentOrderItemId does not exist on ReturnItem; using empty string as placeholder
-            parentBillNumber: "", // TODO: Map to correct field if available
-            itemCode: item.product?.productCode || "",
-            amount: Number(item.refundAmount) || 0,
+            itemCode: item.product?.variationProductCode || "",
+            amount: Number(item.productLossAmount) || 0,
             rate: Number(item.product?.price?.price) || 0,
-            discount: 0,
-            value: Number(item.refundAmount) || 0,
             qty: Number(item.quantityReceived) || 1,
-            description: item.product?.name || "",
-            serial: String(index + 1),
-            extendedFields: {
-                
-                vat_amount: 0,
+            value: Number(item.productLossAmount) || 0,
+            discount: 0,
+            parentBillNumber: billNumber,
+            returnType: "LINE_ITEM",
+            type: "RETURN",                                    
+            extendedFields: {                
+                vat_amount: item.productLossTaxAmount ?? 0,
                 service_tax_amount: 0,
-                amount_including_tax: 0,
-                amount_excluding_tax: 0
+                amount_including_tax: (item.product?.price?.price ?? 0) + (item.productLossTaxAmount ?? 0),
+                amount_excluding_tax: item.product?.price?.price ?? 0
             },
-            customFields: null,
-            appliedPromotionIdentifiers: []
+            
+            
         })) || [];
     }
 
@@ -129,10 +124,10 @@ export class KiboCapillaryReturnMapper {
      */
     private static mapReturnPaymentModes(returnDetails: Return): CapillaryReturnPaymentMode[] {
         return (returnDetails.payments || []).map(payment => ({
-            attributes: null,
-            notes: null,
+            
+            
             mode: getTenderTypeCode(payment.paymentType ?? ""),
-            value: String(payment.amountRequested ?? returnDetails.refundAmount ?? "0.0000")
+            value: -Number(payment.amountRequested)
         }));
     }
 }

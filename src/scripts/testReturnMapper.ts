@@ -8,8 +8,7 @@ import { getReturnDetailsById } from '../KIBO/ReturnDetails';
 dotenv.config();
 
 // Add debug logging for environment variables
-console.log('Environment check:');
-console.log('CAPILLARY_URL:', process.env.CAPILLARY_URL);
+
 
 /**
  * Test script to verify the KiboCapillaryReturnMapper functionality
@@ -19,7 +18,7 @@ async function testReturnMapper() {
         console.log('\nStarting return mapper test...');
         
         // Use the sample return ID
-        const returnId = SAMPLE_RETURN.id;
+        const returnId = "192dbdb13cb7f7000118dd6f000f42b6";
         console.log(`Using return ID: ${returnId}`);
 
         // Map the return to Capillary format
@@ -31,6 +30,7 @@ async function testReturnMapper() {
             return;
         }
         const mappedReturn = await KiboCapillaryReturnMapper.mapReturnToCapillaryFormat(returnDetails);
+        
 
         if (!mappedReturn.success) {
             console.error('Failed to map return:', mappedReturn.message);

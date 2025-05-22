@@ -32,10 +32,10 @@ export const sendReturnDetails = async (returnData: any): Promise<CapillaryTrans
             ? process.env.CAPILLARY_URL.slice(0, -1)
             : process.env.CAPILLARY_URL;
         
-        const url = `${baseUrl}/v2/transactions?${queryString}`;
+        const url = `${baseUrl}/x/neo/transaction/return?${queryString}`;
         
         console.log('Sending request to:', url);
-        console.log(returnData);
+        
         const response = await fetch(
             url,
             {
@@ -46,11 +46,12 @@ export const sendReturnDetails = async (returnData: any): Promise<CapillaryTrans
                     'X-CAP-API-OAUTH-TOKEN': token,
                     'Accept-Language': 'en'
                 },
-                body: JSON.stringify(returnData)
+                body: JSON.stringify([returnData])
             }
         );
 
         if (!response.ok) {
+            
             const errorData = await response.json();
             console.error('Error sending return to Capillary:', errorData);
             return {
@@ -61,6 +62,7 @@ export const sendReturnDetails = async (returnData: any): Promise<CapillaryTrans
         }
 
         const responseData = await response.json();
+        console.log('Response from Capillary:', responseData);
         return {
             success: true,
             message: "Return sent to Capillary successfully",

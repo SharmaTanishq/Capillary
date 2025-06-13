@@ -18,7 +18,7 @@ async function testReturnMapper() {
         console.log('\nStarting return mapper test...');
         
         // Use the sample return ID
-        const returnId = "192dbdb13cb7f7000118dd6f000f42b6";
+        const returnId = "192f70c10d45660001b88641000f42b6";
         console.log(`Using return ID: ${returnId}`);
 
         // Map the return to Capillary format

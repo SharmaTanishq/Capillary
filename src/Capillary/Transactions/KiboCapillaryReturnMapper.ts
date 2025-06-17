@@ -124,7 +124,7 @@ export class KiboCapillaryReturnMapper {
                 amount: (returnDetails.productLossTaxTotal ?? 0) + (returnDetails.shippingLossTaxTotal ?? 0),
                 rate: (returnDetails.productLossTaxTotal ?? 0) + (returnDetails.shippingLossTaxTotal ?? 0),
                 qty: 1.0,                
-                type: "RETURN",
+                
                 value: (returnDetails.productLossTaxTotal ?? 0) + (returnDetails.shippingLossTaxTotal ?? 0),
                 discount: 0.0,
         }];

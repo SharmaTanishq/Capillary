@@ -98,7 +98,7 @@ export class KiboCapillaryReturnMapper {
      * Maps Kibo return items to Capillary line items
      */
     private static mapReturnLineItems(returnDetails: Return,billNumber:string): CapillaryReturnLineItem[] {
-        return returnDetails.items?.map((item: ReturnItem, index: number) => ({
+        const items = returnDetails.items?.map((item: ReturnItem, index: number) => ({
             itemCode: item.product?.variationProductCode || "",
             amount: Number(item.productLossAmount) || 0,
             rate: Number(item.product?.price?.price) || 0,
@@ -117,6 +117,17 @@ export class KiboCapillaryReturnMapper {
             
             
         })) || [];
+
+        return [...items,
+            {                
+                itemCode: "Taxsku",
+                amount: (returnDetails.productLossTaxTotal ?? 0) + (returnDetails.shippingLossTaxTotal ?? 0),
+                rate: (returnDetails.productLossTaxTotal ?? 0) + (returnDetails.shippingLossTaxTotal ?? 0),
+                qty: 1.0,                
+                type: "RETURN",
+                value: (returnDetails.productLossTaxTotal ?? 0) + (returnDetails.shippingLossTaxTotal ?? 0),
+                discount: 0.0,
+        }];
     }
 
     /**

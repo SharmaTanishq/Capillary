@@ -7,6 +7,8 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "watch": "tsc -w",
+    "test:order": "ts-node src/scripts/testOrderMapper.ts ",
+    "test:return": "ts-node src/scripts/testReturnMapper.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "ts-node": "ts-node"

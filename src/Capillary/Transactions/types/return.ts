@@ -30,16 +30,16 @@ export interface CapillaryReturnPaymentMode {
 export interface CapillaryReturnLineItem {
   type?: string;
   parentBillNumber?: string;
-  itemCode: string;
-  amount: number;
-  rate: number;
-  returnType: "LINE_ITEM",
-  discount: number;
-  value: number | string;
-  qty: number | string;
+  itemCode?: string;
+  amount?: number;
+  rate?: number;
+  returnType?: string,
+  discount?: number;
+  value?: number | string;
+  qty?: number | string;
   description?: string;
   serial?: number | string;
-  extendedFields: {
+  extendedFields?: {
     vat_amount?: number;
     service_tax_amount?: number;
     amount_including_tax?: number;

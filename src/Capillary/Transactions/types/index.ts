@@ -25,21 +25,21 @@ export interface PaymentAttributes {
  */
 export interface CapillaryLineItem {
   /** Description of the item */
-  description: string;
+  description?: string;
   /** Discount applied to the item, if any */
   discount: number | null;
   /** Unique identifier for the item */
   itemCode: string;
   /** Total amount for this line item */
-  amount: number;
+  amount?: number;
   /** Quantity of items */
-  qty: string | number;
+  qty?: string | number;
   /** Price per unit */
-  rate: string | number;
+  rate?: string | number;
   /** Serial number or position in the order */
-  serial: number;
+  serial?: number;
   /** Total value (may be same as amount) */
-  value: string | number;
+  value?: string | number;
   /** Additional fields specific to this line item */
   extendedFields?: ExtendedFields;
 }

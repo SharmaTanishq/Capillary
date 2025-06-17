@@ -48,7 +48,7 @@ export class KiboToCapillaryOrderMapper {
             const customerExists = await doesCustomerExist(customerEmail);
 
             // Map line items
-            const lineItems: CapillaryLineItem[] = this.mapLineItems(orderItems);
+            const lineItems: CapillaryLineItem[] = this.mapLineItems(orderItems,orderDetails);
 
             // Map payment modes
             const paymentModes: CapillaryPaymentMode[] = this.mapPaymentModes(orderDetails);
@@ -84,8 +84,8 @@ export class KiboToCapillaryOrderMapper {
     /**
      * Maps Kibo order items to Capillary line items
      */
-    private static mapLineItems(orderItems: CommerceRuntimeOrderItem[]): CapillaryLineItem[] {
-        return orderItems?.map(item => ({
+    private static mapLineItems(orderItems: CommerceRuntimeOrderItem[],orderDetails:Order): CapillaryLineItem[] {
+        const items =  orderItems?.map(item => ({
             description: item.product?.name || "",
             discount: item.productDiscount?.impact || 0,
             itemCode: item.product?.variationProductCode || "",
@@ -101,7 +101,19 @@ export class KiboToCapillaryOrderMapper {
                 service_tax_amount:  0
             }
         })) || [];
+            
+        return [...items,{
+                
+                itemCode: "Taxsku",
+                amount: orderDetails.taxTotal || 0,
+                rate: orderDetails.taxTotal || 0,
+                qty: 1.0,
+                value: orderDetails.taxTotal || 0,
+                discount: 0.0        
+        }];
     }
+
+    
 
     /**
      * Maps Kibo payment information to Capillary payment modes

@@ -9,7 +9,7 @@ import { CapillaryTransaction, CapillaryTransactionResponse, CapillaryTransactio
  * @returns Response from Capillary API or error
  */
 export async function sendOrderDetails({orderDetails,orderItems}:{orderDetails:Order,orderItems:CommerceRuntimeOrderItem[]}): Promise<CapillaryTransactionResponse> {
-    try {
+    
         // Map Kibo order to Capillary format
         const mappingResult = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat(orderDetails,orderItems);
 
@@ -27,23 +27,23 @@ export async function sendOrderDetails({orderDetails,orderItems}:{orderDetails:O
         const token = await tokenService.getToken();
 
         // Prepare query parameters
-        const params: CapillaryTransactionParams = {
-            source: "INSTORE",
-            identifierName: "email",
-            identifierValue: transactionData.identifierValue
-        };
+        // const params: CapillaryTransactionParams = {
+        //     source: "INSTORE",
+        //     identifierName: "email",
+        //     identifierValue: transactionData.identifierValue
+        // };
 
         // Build query string
-        const queryString = Object.entries(params)
-            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-            .join('&');
+        // const queryString = Object.entries(params)
+        //     .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+        //     .join('&');
 
         console.log(
-           `Transaction Data for ${orderDetails.externalId}`,transactionData);
+           `Transaction Data for ${orderDetails.externalId}`,JSON.stringify([transactionData],null,2));
 
         // Make POST request to Capillary API
         const response = await fetch(
-            `${process.env.CAPILLARY_URL}/x/neo/transaction/sale?${queryString}`,
+            `${process.env.CAPILLARY_URL}/x/neo/transaction/sale`,
             {
                 method: 'POST',
                 headers: {
@@ -52,33 +52,44 @@ export async function sendOrderDetails({orderDetails,orderItems}:{orderDetails:O
                     'X-CAP-API-OAUTH-TOKEN': token,
                     'Accept-Language': 'en'
                 },
-                body: JSON.stringify(transactionData)
+                body: JSON.stringify([transactionData])
             }
-        );
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Error sending transaction to Capillary:', errorData);
+        ).then(res => res.json()).then(data => {
+            
+            return {
+                success: true,
+                message: "Transaction sent to Capillary successfully",
+                data: JSON.stringify(data.response[0].result,null,2)
+            };
+        }).catch(err => {
+            console.log("err",err);
             return {
                 success: false,
                 message: "Failed to send transaction to Capillary",
-                error: errorData
+                error: err
             };
-        }
+        });
 
-        const responseData = await response.json();
-        console.log(JSON.stringify(responseData, null, 2));
-        return {
-            success: true,
-            message: "Transaction sent to Capillary successfully",
-            data: responseData.errors[0]
-        };
+        return response;
 
-    } catch (error) {
-        console.error('Error in sendOrderDetails:', error);
-        return {
-            success: false,
-            message: `Error sending order details: ${error instanceof Error ? error.message : String(error)}`
-        };
-    }
+        // if (!response.ok) {
+        //     const errorData = await response.json();
+        //     console.error('Error sending transaction to Capillary:', errorData);
+        //     return {
+        //         success: false,
+        //         message: "Failed to send transaction to Capillary",
+        //         error: errorData
+        //     };
+        // }
+
+        // const responseData = await response.json();
+        // console.log("responseData",responseData.result[0]);  
+        // console.log("responseData",JSON.stringify(responseData.errors[0],null,2));  
+        // return {
+        //     success: true,
+        //     message: "Transaction sent to Capillary successfully",
+        //     data: responseData.errors[0]
+        // };
+
+    
 }

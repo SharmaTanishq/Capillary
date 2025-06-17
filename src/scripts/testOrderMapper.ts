@@ -14,13 +14,19 @@ async function testOrderMapper() {
   try {
     console.log('Testing KiboToCapillaryOrderMapper...');
     
-    console.log(`Mapping Kibo order ${sampleOrder.id} to Capillary format...`);
+    //console.log(`Mapping Kibo order ${sampleOrder.id} to Capillary format...`);
     
-    const order = await getOrderDetailsById("192ba3bb57d1090001c4e322000f42b6");
-    if(!order || !order?.synthesized || !order?.unSynthesized.items) {
-      console.log("Order not found");
-      return;
-    }
+const orderId = process.argv[2]; // Get order ID from command line argument
+if (!orderId) {
+  console.log("Please provide an order ID as a command line argument");
+  return;
+}
+console.log(`Order ID: ${orderId}`);
+const order = await getOrderDetailsById(orderId);
+if(!order || !order?.synthesized || !order?.unSynthesized.items) {
+  console.log("Order not found");
+  return;
+}
     
     // Map the sample order to Capillary format
     //const result = await KiboToCapillaryOrderMapper.mapOrderToCapillaryFormat(order?.unSynthesized, order?.synthesized?.items!);

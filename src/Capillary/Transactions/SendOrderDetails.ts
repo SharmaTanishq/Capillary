@@ -43,7 +43,7 @@ export async function sendOrderDetails({orderDetails,orderItems}:{orderDetails:O
 
         // Make POST request to Capillary API
         const response = await fetch(
-            `${process.env.CAPILLARY_URL}/v2/transactions?${queryString}`,
+            `${process.env.CAPILLARY_URL}/x/neo/transaction/sale?${queryString}`,
             {
                 method: 'POST',
                 headers: {

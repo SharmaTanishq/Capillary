@@ -2,7 +2,7 @@ export function getTenderTypeCode(tenderType: string): string {
     const tenderTypeMap: { [key: string]: string } = {
         'CreditCard': "CREDIT CARD",
         'PLCC': "PLCC", 
-        'Gift Card': "GIFT CARD",        
+        'GiftCard': "GIFT CARD",        
         'Purchase Order': "PURCHASE ORDER",
         'Cash': "CASH",
         'Debit': "DEBIT",

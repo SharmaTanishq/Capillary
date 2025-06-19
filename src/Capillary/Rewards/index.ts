@@ -5,8 +5,7 @@ import { unredeemCoupon } from './UnRedeem';
 
 interface RedeemParams {
     code: string;
-    email: string;
-    billAmount?: string;
+    orderId: string;
 }
 
 interface UnredeemParams {

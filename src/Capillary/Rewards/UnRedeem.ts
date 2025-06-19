@@ -12,12 +12,15 @@ interface UnredeemCouponParams {
  */
 export async function unredeemCoupon(params: UnredeemCouponParams, token: string): Promise<UnredeemCouponResponse> {
     try {
+        
         const requestBody = {
-            redemptionIds: [params.redemptionId]
+            redemptionIds: [params]
         };
 
+        console.log("Request Body",requestBody);
+
         const response = await fetch(`${process.env.CAPILLARY_URL}/v2/coupon/reactivate`, {
-            method: 'PATCH',
+            method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',

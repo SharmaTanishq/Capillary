@@ -1,8 +1,9 @@
+import { getOrderDetailsById } from '../../KIBO/OrderDetails';
 import { RedeemCouponResponse } from '../../types';
 
 interface RedeemCouponParams {
-    email: string;
-    billAmount?: string;
+ 
+    orderId:string;
     code: string;
 }
 
@@ -16,15 +17,14 @@ export async function redeemCoupon(params: RedeemCouponParams, token: string): P
     try {
         // Format current date in US format (MM/DD/YYYY HH:mm:ss)
         const now = new Date();
-        const redemptionTime = now.toLocaleString('en-US', {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-        }).replace(',', '');
+        const redemptionTime = now.toISOString().slice(0, 19).replace('T', ' ');
+        
+        console.log("Redeem Time",params);
+        const getOrderDetails = await getOrderDetailsById(params.orderId);
+
+        if(!getOrderDetails){
+            return { error: "Order not found" };
+        }
 
         const requestBody = {
             redemptionRequestList: [
@@ -33,15 +33,17 @@ export async function redeemCoupon(params: RedeemCouponParams, token: string): P
                 }
             ],
             user: {
-                email: params.email
+                email: getOrderDetails.synthesized.email
             },
-            transactionNumber: "",
-            billAmount: params.billAmount || "0",
+            transactionNumber: getOrderDetails.synthesized.externalId || getOrderDetails.synthesized.orderNumber,
+            billAmount: getOrderDetails.synthesized.total?.toString() || "0",
             redemptionTime: redemptionTime
         };
 
+        console.log("Request Body",requestBody);
+
         const response = await fetch(`${process.env.CAPILLARY_URL}/v2/coupon/redeem`, {
-            method: 'PATCH',
+            method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
@@ -53,6 +55,7 @@ export async function redeemCoupon(params: RedeemCouponParams, token: string): P
         
         if (!response.ok) {
             const errorReason = await response.json();
+            console.log("Error Reason",errorReason);
             return { error: errorReason };
         }
         

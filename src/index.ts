@@ -33,16 +33,16 @@ router.get('/getActiveCoupons', async (req: any, res: any) => {
     }
 });
 
-router.get('/memberRewards/:rewardId/redeem', async (req: any, res: any) => {
+router.get('/memberRewards/redeem/:redeemId&:orderId', async (req: any, res: any) => {
     try {
-        const { rewardId } = req.params;
+        const { redeemId,orderId } = req.params;
         
-        if (!rewardId) {
+        if (!redeemId || !orderId) {
             return res.status(400).json({ error: 'Reward ID is required' });
         }
-        
+
         const couponService = await CouponService.create();
-        const result = await couponService.redeemCoupon(rewardId);
+        const result = await couponService.redeemCoupon({code:redeemId,orderId});
         
         res.json(result);
     } catch (error) {
@@ -51,16 +51,16 @@ router.get('/memberRewards/:rewardId/redeem', async (req: any, res: any) => {
     }
 });
 
-router.get('/memberRewards/:rewardId/unredeem', async (req: any, res: any) => {
+router.get('/memberRewards/unredeem/:redemptionId', async (req: any, res: any) => {
     try {
-        const { rewardId } = req.params;
+        const { redemptionId } = req.params;
         
-        if (!rewardId) {
+        if (!redemptionId) {
             return res.status(400).json({ error: 'Reward ID is required' });
         }
-        
+        console.log("Redemption ID",redemptionId);
         const couponService = await CouponService.create();
-        const result = await couponService.unredeemCoupon(rewardId);
+        const result = await couponService.unredeemCoupon(redemptionId);
         
         res.json(result);
     } catch (error) {

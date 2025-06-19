@@ -23,8 +23,7 @@ describe('redeemCoupon', () => {
 
         const params = {
             code: '650150',
-            email: 'test@example.com',
-            billAmount: '100'
+            orderId: '1234567890'
         };
 
         await redeemCoupon(params, 'test-token');
@@ -67,7 +66,7 @@ describe('redeemCoupon', () => {
 
         const params = {
             code: 'invalid-code',
-            email: 'test@example.com'
+            orderId: '1234567890'
         };
 
         const result = await redeemCoupon(params, 'test-token');
@@ -83,7 +82,7 @@ describe('redeemCoupon', () => {
 
         const params = {
             code: '650150',
-            email: 'test@example.com'
+            orderId: '1234567890'
         };
 
         await redeemCoupon(params, 'test-token');
@@ -104,7 +103,7 @@ describe('redeemCoupon', () => {
 
         const params = {
             code: '650150',
-            email: 'test@example.com'
+            orderId: '1234567890'
         };
 
         await redeemCoupon(params, 'test-token');
@@ -123,7 +122,7 @@ describe('redeemCoupon', () => {
 
         const params = {
             code: '650150',
-            email: 'test@example.com'
+            orderId: '1234567890'
         };
 
         await expect(redeemCoupon(params, 'test-token'))

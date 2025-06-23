@@ -137,7 +137,7 @@ export class KiboCapillaryReturnMapper {
         return (returnDetails.payments || []).map(payment => ({
             
             
-            mode: getTenderTypeCode(payment.paymentType ?? ""),
+            mode: getTenderTypeCode(payment.paymentType || "", payment.billingInfo?.card?.paymentOrCardType || ""),
             value: -Number(payment.amountRequested)
         }));
     }

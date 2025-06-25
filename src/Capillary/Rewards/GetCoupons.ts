@@ -37,9 +37,11 @@ export async function getActiveCoupons(memberEmail: string, token: string): Prom
         if (!customer.coupons || customer.coupons.length === 0) {
             return [];
         }
+
+        const FIVE_DOLLAR_COUPONS = customer.coupons.filter(coupon => coupon.discountType === "ABS");
         
         // Transform Capillary coupons to Kibo format
-        const formattedCoupons: KiboCoupon[] = customer.coupons.map(coupon => ({
+        const formattedCoupons: KiboCoupon[] = FIVE_DOLLAR_COUPONS.map(coupon => ({
             "code": coupon.code,
             "currencyCode": "USD",
             "customCreditType": 'LoyaltyRewards',

@@ -91,7 +91,7 @@ export class KiboToCapillaryOrderMapper {
             itemCode: item.product?.variationProductCode || "",
             amount: Number(item.extendedTotal) ,
             qty: String(item.quantity) ,
-            rate: Number(item.product?.price?.price) - (item.productDiscount?.impact || 0) || 0,
+            rate: Number(item.product?.price?.price) - ((item.productDiscount?.impact ?? 0)/(item.quantity ?? 1)) || 0,
             serial: 1,
             value: Number(item.extendedTotal) || 0,
             extendedFields: {

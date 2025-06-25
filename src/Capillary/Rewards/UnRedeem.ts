@@ -14,7 +14,7 @@ export async function unredeemCoupon(params: UnredeemCouponParams, token: string
     try {
         
         const requestBody = {
-            redemptionIds: [params]
+            redemptionIds: [params.redemptionId]
         };
 
         console.log("Request Body",requestBody);

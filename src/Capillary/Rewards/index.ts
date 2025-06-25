@@ -1,5 +1,6 @@
 import { TokenService } from '../TokenService';
 import { getActiveCoupons } from './GetCoupons';
+import { GetRedemptionId } from './GetRedemtionId';
 import { redeemCoupon } from './Redeem';
 import { unredeemCoupon } from './UnRedeem';
 
@@ -10,6 +11,7 @@ interface RedeemParams {
 
 interface UnredeemParams {
     redemptionId: string;
+    email: string;
 }
 
 export class CouponService {
@@ -42,7 +44,9 @@ export class CouponService {
      * @returns The response data or error
      */
     async unredeemCoupon(params: UnredeemParams) {
-        return unredeemCoupon(params, this.token);
+        const redemptionId = await GetRedemptionId(params.email, this.token, params.redemptionId);
+        console.log("Redemption ID",redemptionId);
+        return unredeemCoupon({redemptionId}, this.token);
     }
 
     /**

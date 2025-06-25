@@ -12,8 +12,7 @@ export function getTenderTypeCode(tenderType: string, paymentOrCardType?: string
         'GiftCard': "GIFT CARD",        
         'Purchase Order': "PURCHASE ORDER", 
         'Cash': "CASH",
-        'Debit': "DEBIT",
-        'FleetRewards': "FLEET REWARDS",
+        'Debit': "DEBIT",        
         'StoreCredit': "PROGRAM REWARD",
         'Voucher': "VOUCHER"
     };

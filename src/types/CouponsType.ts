@@ -33,6 +33,13 @@ export interface IssuedAt {
  */
 export interface RedemptionRecord {
   // Add properties as needed when available in the data
+  id: number;
+  date: string;
+  transactionNumber: string;
+  redeemedAt: {
+    code: string;
+    name: string;
+  };
 }
 
 /**

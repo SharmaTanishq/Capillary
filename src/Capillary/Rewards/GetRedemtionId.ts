@@ -1,4 +1,5 @@
-import { CapillaryCouponResponse, GetActiveCouponsResponse, KiboCoupon } from '../../types';
+import { getOrderDetailsById } from '../../KIBO/OrderDetails';
+import { CapillaryCouponResponse } from '../../types';
 
 /**
  * Gets active coupons for a member from Capillary and formats them for Kibo
@@ -6,7 +7,15 @@ import { CapillaryCouponResponse, GetActiveCouponsResponse, KiboCoupon } from '.
  * @param couponCode The coupon code to get the redemption id for
  * @returns Array of coupons formatted for Kibo Commerce
  */
-export async function GetRedemptionId(memberEmail: string, token: string,couponCode:string): Promise<string> {
+export async function GetRedemptionId(orderId: string, token: string,couponCode:string): Promise<string> {
+
+    const order = await getOrderDetailsById(orderId);
+    const memberEmail = order?.unSynthesized?.email;
+
+    if(!memberEmail){
+        return "Failed to get Member Email";
+    }
+
     try {
         
         // Call to Capillary API

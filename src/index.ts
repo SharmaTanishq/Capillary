@@ -51,16 +51,16 @@ router.get('/memberRewards/redeem/:redeemId&:orderId', async (req: any, res: any
     }
 });
 
-router.get('/memberRewards/unredeem/:redemptionId&:email', async (req: any, res: any) => {
+router.get('/memberRewards/unredeem/:redemptionId&:orderId', async (req: any, res: any) => {
     try {
-        const { redemptionId,email } = req.params;
+        const { redemptionId,orderId } = req.params;
         
         if (!redemptionId) {
             return res.status(400).json({ error: 'Reward ID is required' });
         }
         console.log("Redemption ID",redemptionId);
         const couponService = await CouponService.create();
-        const result = await couponService.unredeemCoupon({redemptionId,email});
+        const result = await couponService.unredeemCoupon({redemptionId,orderId});
         
         res.json(result);
     } catch (error) {

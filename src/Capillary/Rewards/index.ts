@@ -11,7 +11,7 @@ interface RedeemParams {
 
 interface UnredeemParams {
     redemptionId: string;
-    email: string;
+    orderId: string;
 }
 
 export class CouponService {
@@ -44,8 +44,9 @@ export class CouponService {
      * @returns The response data or error
      */
     async unredeemCoupon(params: UnredeemParams) {
-        const redemptionId = await GetRedemptionId(params.email, this.token, params.redemptionId);
-        console.log("Redemption ID",redemptionId);
+        
+        const redemptionId = await GetRedemptionId(params.orderId, this.token, params.redemptionId);
+        
         return unredeemCoupon({redemptionId}, this.token);
     }
 

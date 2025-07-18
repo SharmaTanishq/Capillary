@@ -73,40 +73,40 @@ export async function sendOrderDetails({
     }
   )
     .then((res) => res.json())
-    .then((data) => {
-      console.log("data",data);
-      if (mappingResult.creditTenders) {
-        const creditTenders = mappingResult.creditTenders;
-        creditTenders.forEach(async (tender: any) => {
-          await fetch(`${config.capillary.webhook}`, {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              "X-CAP-API-OAUTH-TOKEN": config.capillary.webhookSecret,
-              "Accept-Language": "en",
-            },
-            body: JSON.stringify({
-              date: new Date().toISOString(),
-              event_name: "redemption_reversal",
-              externalId: transactionData.identifierValue,
-              till: "flt." + storeId + ".001",
-              transaction_no: transactionData.billNumber,
-              value: tender.value,
-            }),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              console.log("creditTendersData", data);
-            });
-        });
-      }
-      return {
-        success: true,
-        message: "Transaction sent to Capillary successfully",
-        data: JSON.stringify(data.response[0].result, null, 2),
-      };
-    })
+    // .then((data) => {
+    //   console.log("data",data);
+    //   if (mappingResult.creditTenders) {
+    //     const creditTenders = mappingResult.creditTenders;
+    //     creditTenders.forEach(async (tender: any) => {
+    //       await fetch(`${config.capillary.webhook}`, {
+    //         method: "POST",
+    //         headers: {
+    //           Accept: "application/json",
+    //           "Content-Type": "application/json",
+    //           "X-CAP-API-OAUTH-TOKEN": config.capillary.webhookSecret,
+    //           "Accept-Language": "en",
+    //         },
+    //         body: JSON.stringify({
+    //           date: new Date().toISOString(),
+    //           event_name: "redemption_reversal",
+    //           externalId: transactionData.identifierValue,
+    //           till: "flt." + storeId + ".001",
+    //           transaction_no: transactionData.billNumber,
+    //           value: tender.value,
+    //         }),
+    //       })
+    //         .then((res) => res.json())
+    //         .then((data) => {
+    //           console.log("creditTendersData", data);
+    //         });
+    //     });
+    //   }
+    //   return {
+    //     success: true,
+    //     message: "Transaction sent to Capillary successfully",
+    //     data: JSON.stringify(data.response[0].result, null, 2),
+    //   };
+    // })
     .catch((err) => {
       console.log("err", err);
       return {

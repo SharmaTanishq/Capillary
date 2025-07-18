@@ -10,7 +10,7 @@ interface RedeemParams {
 }
 
 interface UnredeemParams {
-    redemptionId: string;
+    redemptionId: string; //Coupon Code. Not Redemption ID.
     orderId: string;
 }
 

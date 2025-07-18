@@ -3,8 +3,7 @@ const FLEET_REWARDS_CREDIT_CARD = "FLEET_REWARDS_CREDIT_CARD";
 
 export function getTenderTypeCode(tenderType: string, paymentOrCardType?: string): string {
 
-   console.log("tenderType", tenderType);
-   console.log("paymentOrCardType", paymentOrCardType);
+   
 
     const tenderTypeMap: { [key: string]: string } = {
         'CreditCard': paymentOrCardType === FLEET_REWARDS_CREDIT_CARD ? "PLCC" : "CREDIT CARD",

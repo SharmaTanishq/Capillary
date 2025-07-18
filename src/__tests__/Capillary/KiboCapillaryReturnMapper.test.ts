@@ -158,4 +158,111 @@ describe('KiboCapillaryReturnMapper', () => {
         expect(result.success).toBe(true);
         expect(result.data?.lineItemsV2).toEqual([]);
     });
+});
+
+describe('KiboCapillaryReturnMapper.mapReturnPaymentModes', () => {
+  const baseReturn = { id: 'RET1' };
+  const getMode = (type: string) => {
+    if (type === 'StoreCredit') return 'PROGRAM REWARD';
+    if (type === 'CreditCard') return 'CREDIT CARD';
+    if (type === 'GiftCard') return 'GIFT CARD';
+    return type.toUpperCase();
+  };
+
+  it('should map standard CreditCard payment with Credit interaction', () => {
+    const payments = [
+      {
+        paymentType: 'CreditCard',
+        billingInfo: { card: { paymentOrCardType: 'MC' } },
+        interactions: [
+          { interactionType: 'Credit', returnId: 'RET1', amount: 42.5 }
+        ]
+      }
+    ];
+    const result = KiboCapillaryReturnMapper['mapReturnPaymentModes']({ ...baseReturn, payments });
+    expect(result).toEqual([
+      { mode: getMode('CreditCard'), value: -42.5 }
+    ]);
+  });
+
+  it('should map StoreCredit with only dummyAmount present', () => {
+    const payments = [
+      {
+        paymentType: 'StoreCredit',
+        data: { isPosTransaction: true, dummyAmount: 10 },
+        interactions: [
+          { interactionType: 'Credit', returnId: 'RET1', amount: 10 }
+        ]
+      }
+    ];
+    const result = KiboCapillaryReturnMapper['mapReturnPaymentModes']({ ...baseReturn, payments });
+    expect(result).toEqual([
+      { mode: getMode('StoreCredit'), value: -10 }
+    ]);
+  });
+
+  it('should map StoreCredit with dummyAmount and actualAmount present and equal', () => {
+    const payments = [
+      {
+        paymentType: 'StoreCredit',
+        data: { isPosTransaction: true, dummyAmount: 15, actualAmount: 15 },
+        interactions: [
+          { interactionType: 'Credit', returnId: 'RET1', amount: 15 }
+        ]
+      }
+    ];
+    const result = KiboCapillaryReturnMapper['mapReturnPaymentModes']({ ...baseReturn, payments });
+    expect(result).toEqual([
+      { mode: getMode('StoreCredit'), value: -15 }
+    ]);
+  });
+
+  it('should map StoreCredit with dummyAmount and actualAmount present and not equal', () => {
+    const payments = [
+      {
+        paymentType: 'StoreCredit',
+        data: { isPosTransaction: true, dummyAmount: 20, actualAmount: 30 },
+        interactions: [
+          { interactionType: 'Credit', returnId: 'RET1', amount: 30 },
+          { interactionType: 'Credit', returnId: 'RET1', amount: 20 }
+        ]
+      }
+    ];
+    const result = KiboCapillaryReturnMapper['mapReturnPaymentModes']({ ...baseReturn, payments });
+    expect(result).toEqual([
+      { mode: getMode('StoreCredit'), value: -30 }
+    ]);
+  });
+
+  it('should map StoreCredit with only actualAmount present', () => {
+    const payments = [
+      {
+        paymentType: 'StoreCredit',
+        data: { isPosTransaction: true, actualAmount: 50 },
+        interactions: [
+          { interactionType: 'Credit', returnId: 'RET1', amount: 50 }
+        ]
+      }
+    ];
+    const result = KiboCapillaryReturnMapper['mapReturnPaymentModes']({ ...baseReturn, payments });
+    expect(result).toEqual([
+      { mode: getMode('StoreCredit'), value: -50 }
+    ]);
+  });
+
+  it('should fallback for other payment types', () => {
+    const payments = [
+      {
+        paymentType: 'GiftCard',
+        billingInfo: { card: { paymentOrCardType: 'GC' } },
+        interactions: [
+          { interactionType: 'Credit', returnId: 'RET1', amount: 99 }
+        ]
+      }
+    ];
+    const result = KiboCapillaryReturnMapper['mapReturnPaymentModes']({ ...baseReturn, payments });
+    expect(result).toEqual([
+      { mode: getMode('GiftCard'), value: -99 }
+    ]);
+  });
 }); 

@@ -44,6 +44,7 @@ export const sendReturnDetails = async (returnData: any): Promise<CapillaryTrans
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'X-CAP-API-OAUTH-TOKEN': token,
+                    //ADD STORE & TILL HEADERS HERE
                     'Accept-Language': 'en'
                 },
                 body: JSON.stringify([returnData])

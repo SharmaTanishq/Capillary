@@ -18,6 +18,7 @@ export class KiboToCapillaryOrderMapper {
         success: boolean;
         data?: CapillaryTransaction;
         message?: string;
+        creditTenders?: any;
     }> {
         try {
             // Get order details from Kibo
@@ -51,7 +52,9 @@ export class KiboToCapillaryOrderMapper {
             const lineItems: CapillaryLineItem[] = this.mapLineItems(orderItems,orderDetails);
 
             // Map payment modes
-            const paymentModes: CapillaryPaymentMode[] = this.mapPaymentModes(orderDetails);
+            const paymentModes: any = this.mapPaymentModes(orderDetails);
+
+            console.log("paymentModes",paymentModes);
 
             // Create transaction data
             const transactionData: CapillaryTransaction = {
@@ -65,13 +68,15 @@ export class KiboToCapillaryOrderMapper {
                 grossAmount: String(orderDetails.total) || "0",
                 billNumber: orderDetails?.externalId || orderDetails.id!,
                 lineItemsV2: lineItems,
-                paymentModes: paymentModes,
+                paymentModes: paymentModes[0].tenders,
                
             };
 
             return {
                 success: true,
-                data: transactionData
+                data: transactionData,
+                message: "Order mapped to Capillary format",
+                creditTenders: paymentModes[0].creditTenders
             };
         } catch (error) {
             return {
@@ -118,13 +123,34 @@ export class KiboToCapillaryOrderMapper {
     /**
      * Maps Kibo payment information to Capillary payment modes
      */
-    private static mapPaymentModes(orderDetails: Order): CapillaryPaymentMode[] {
+    private static mapPaymentModes(orderDetails: Order): any[] {
         
-        return orderDetails.payments?.map(payment => ({
-            mode: getTenderTypeCode(payment.paymentType ?? "", payment.billingInfo?.card?.paymentOrCardType || ""),
-            value: payment.amountCollected!,
-            //notes: `Payment for order ${orderDetails.id}`,
-            //attributes: {}
-        })) || [];
+        const creditTenders: any[] = [];
+        
+        const tenders =  orderDetails.payments?.map(payment => {
+            if(payment.paymentType === "StoreCredit"){
+                if(payment.amountCollected && payment.amountCredited && payment.amountCredited < 5){
+                    creditTenders.push({
+                        mode: getTenderTypeCode(payment.paymentType ?? "", payment.billingInfo?.card?.paymentOrCardType || ""),
+                        value: payment.amountCredited!,       
+                        isCredit: true,                 
+                    });
+                    return [];
+                }else{
+                    return {
+                        mode: getTenderTypeCode(payment.paymentType ?? "", payment.billingInfo?.card?.paymentOrCardType || ""),
+                        value: payment.amountCollected!,
+                    }
+                }                              
+            }
+            else{
+                return {
+                    mode: getTenderTypeCode(payment.paymentType ?? "", payment.billingInfo?.card?.paymentOrCardType || ""),
+                    value: payment.amountCollected!,
+                }
+            }                        
+        }) || [];
+
+        return [{tenders:tenders.flat(),creditTenders:creditTenders}];
     }
 } 

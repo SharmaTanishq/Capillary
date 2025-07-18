@@ -10,6 +10,7 @@ import {
   CapillaryTransactionResponse,
   CapillaryTransactionParams,
 } from "./types";
+import { config } from "../../Utils/config";
 
 /**
  * Sends order details to Capillary API as a transaction
@@ -55,12 +56,6 @@ export async function sendOrderDetails({
   const tokenService = TokenService.getInstance();
   const token = await tokenService.getToken();
 
-
-  console.log(
-    `Transaction Data for ${orderDetails.externalId}`,
-    JSON.stringify([transactionData], null, 2)
-  );
-
   // Make POST request to Capillary API
   const response = await fetch(
     `${process.env.CAPILLARY_URL}/x/neo/transaction/sale`,
@@ -70,8 +65,8 @@ export async function sendOrderDetails({
         Accept: "application/json",
         "Content-Type": "application/json",
         "X-CAP-API-OAUTH-TOKEN": token,
-        "X-CAP-API-ATTRIBUTION-ENTITY-TYPE": "TILL",        
-        "X-CAP-API-ATTRIBUTION-ENTITY-CODE": "flt." + storeId + ".001",
+        "X-CAP-API-ATTRIBUTION-ENTITY-TYPE": "TILL",
+        "X-CAP-API-ATTRIBUTION-ENTITY-CODE": "flt." + storeId + ".001", //FLT SHOULD BE CONFIGURABLE
         "Accept-Language": "en",
       },
       body: JSON.stringify([transactionData]),
@@ -79,6 +74,33 @@ export async function sendOrderDetails({
   )
     .then((res) => res.json())
     .then((data) => {
+      console.log("data",data);
+      if (mappingResult.creditTenders) {
+        const creditTenders = mappingResult.creditTenders;
+        creditTenders.forEach(async (tender: any) => {
+          await fetch(`${config.capillary.webhook}`, {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              "X-CAP-API-OAUTH-TOKEN": config.capillary.webhookSecret,
+              "Accept-Language": "en",
+            },
+            body: JSON.stringify({
+              date: new Date().toISOString(),
+              event_name: "redemption_reversal",
+              externalId: transactionData.identifierValue,
+              till: "flt." + storeId + ".001",
+              transaction_no: transactionData.billNumber,
+              value: tender.value,
+            }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              console.log("creditTendersData", data);
+            });
+        });
+      }
       return {
         success: true,
         message: "Transaction sent to Capillary successfully",
